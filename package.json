@@ -10,11 +10,11 @@
     "preview": "vite preview",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "vitest",
+    "test": "vitest --run",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
-    "test:storybook": "test-storybook",
-    "test:all": "npm run test && npm run test:storybook"
+    "test:unit": "vitest --run --project unit",
+    "test:stories": "vitest --run --project storybook"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

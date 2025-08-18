@@ -7,7 +7,7 @@
 ## 🚀 クイックスタート
 
 ### **環境要件**
-- Node.js 18以上
+- Node.js 20以上（20.19+ 推奨）
 - npm または yarn
 
 ### **セットアップ**
@@ -23,19 +23,24 @@ npm run storybook
 npm run dev
 # → http://localhost:5173 でアプリケーションが開きます
 
-# 4. テストの実行
-npm run test        # Vitest単体テスト
-npm run test:all    # 全テスト実行
+# 4. テストの実行（CLI）
+npm run test          # unit + storybook を一括実行
+npm run test:unit     # unit のみ
+npm run test:stories  # Storybook のみ（Play Function など）
+
+# 5. 初回のみ（Browser 実行に必要な Playwright のセットアップ）
+npx playwright install --with-deps
 ```
 
 ### **主要コマンド**
 ```bash
 npm run storybook           # Storybook開発サーバー起動
 npm run build-storybook     # Storybook静的ビルド
-npm run test               # Vitestテスト実行
-npm run test:storybook     # Storybookインタラクションテスト
-npm run dev               # Vite開発サーバー起動
-npm run build             # プロダクションビルド
+npm run test                # unit + storybook を一括実行
+npm run test:unit           # ユニットテストのみ
+npm run test:stories        # Storybook インタラクションテストのみ
+npm run dev                 # Vite開発サーバー起動
+npm run build               # プロダクションビルド
 ```
 
 ---
@@ -334,17 +339,16 @@ describe('ContactFormValidation', () => {
 # Storybookの起動（開発・テスト用）
 npm run storybook
 
-# Vitestの実行（ユニット・スキーマテスト）
-npm run test
-
-# 全テストの実行
-npm run test:all
+# テストの実行
+npm run test          # まとめて実行
+npm run test:unit     # unit のみ
+npm run test:stories  # Storybook のみ
 ```
 
 ### **CI/CDでのテスト**
 ```bash
 # Storybookインタラクションテストの実行
-npm run test:storybook
+npm run test:stories
 
 # 静的Storybookのビルド
 npm run build-storybook
