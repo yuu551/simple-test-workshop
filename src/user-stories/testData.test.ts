@@ -122,7 +122,7 @@ describe('Test Data Utilities', () => {
 
       const result = validateTestData(invalidData);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('名前は必須項目です');
+      expect(result.errors).toContain('お名前は必須です');
     });
 
     it('メールアドレスが無効な形式の場合にエラーを返す', () => {
@@ -136,7 +136,7 @@ describe('Test Data Utilities', () => {
 
       const result = validateTestData(invalidData);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('正しいメールアドレスを入力してください');
+      expect(result.errors).toContain('有効なメールアドレスを入力してください');
     });
 
     it('件名が空の場合にエラーを返す', () => {
@@ -150,7 +150,7 @@ describe('Test Data Utilities', () => {
 
       const result = validateTestData(invalidData);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('件名は必須項目です');
+      expect(result.errors).toContain('件名は必須です');
     });
 
     it('メッセージが空の場合にエラーを返す', () => {
@@ -164,7 +164,7 @@ describe('Test Data Utilities', () => {
 
       const result = validateTestData(invalidData);
       expect(result.isValid).toBe(false);
-      expect(result.errors).toContain('本文は必須項目です');
+      expect(result.errors).toContain('お問い合わせ内容は必須です');
     });
 
     it('複数のエラーがある場合に全てのエラーを返す', () => {
@@ -179,10 +179,10 @@ describe('Test Data Utilities', () => {
       const result = validateTestData(invalidData);
       expect(result.isValid).toBe(false);
       expect(result.errors).toHaveLength(4);
-      expect(result.errors).toContain('名前は必須項目です');
-      expect(result.errors).toContain('正しいメールアドレスを入力してください');
-      expect(result.errors).toContain('件名は必須項目です');
-      expect(result.errors).toContain('本文は必須項目です');
+      expect(result.errors).toContain('お名前は必須です');
+      expect(result.errors).toContain('有効なメールアドレスを入力してください');
+      expect(result.errors).toContain('件名は必須です');
+      expect(result.errors).toContain('お問い合わせ内容は必須です');
     });
   });
 

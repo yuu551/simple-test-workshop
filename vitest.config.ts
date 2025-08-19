@@ -1,14 +1,24 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import * as path from 'path';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 
-const dirname = typeof __dirname !== 'undefined' ? __dirname : path.dirname(fileURLToPath(import.meta.url));
+const dirname = process.cwd();
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': path.resolve(dirname, './src'),
+      '@/app': path.resolve(dirname, './src/app'),
+      '@/pages': path.resolve(dirname, './src/pages'),
+      '@/widgets': path.resolve(dirname, './src/widgets'),
+      '@/features': path.resolve(dirname, './src/features'),
+      '@/entities': path.resolve(dirname, './src/entities'),
+      '@/shared': path.resolve(dirname, './src/shared'),
+    }
+  },
   test: {
     projects: [
       // Unit tests project
@@ -35,7 +45,7 @@ export default defineConfig({
         extends: true,
         plugins: [
           storybookTest({
-            configDir: path.join(dirname, '.storybook')
+            configDir: '.storybook'
           })
         ],
         test: {

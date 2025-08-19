@@ -3,7 +3,7 @@
  * ユーザーストーリーのシナリオIDとテストデータを連携
  */
 
-import { type ContactFormData } from '@/features/contact/model/validation';
+import { type ContactFormData } from './validation';
 
 export interface TestDataSet {
   scenarioId: string;
@@ -43,7 +43,7 @@ export const contactFormTestData: TestDataSet[] = [
       privacyPolicy: true
     },
     expectedResult: 'validation_error',
-    expectedErrors: ['お名前は必須です']
+    expectedErrors: ['名前は必須項目です']
   },
   
   // US-001 シナリオ: 不正なメールアドレス形式
@@ -58,7 +58,7 @@ export const contactFormTestData: TestDataSet[] = [
       privacyPolicy: true
     },
     expectedResult: 'validation_error',
-    expectedErrors: ['有効なメールアドレスを入力してください']
+    expectedErrors: ['正しいメールアドレスを入力してください']
   },
   
   // US-002 シナリオ: 確認後の送信
@@ -148,21 +148,21 @@ export const validateTestData = (data: ContactFormData): {
   const errors: string[] = [];
   
   if (!data.name.trim()) {
-    errors.push('お名前は必須です');
+    errors.push('名前は必須項目です');
   }
   
   if (!data.email.trim()) {
-    errors.push('メールアドレスは必須です');
+    errors.push('メールアドレスは必須項目です');
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
-    errors.push('有効なメールアドレスを入力してください');
+    errors.push('正しいメールアドレスを入力してください');
   }
   
   if (!data.subject.trim()) {
-    errors.push('件名は必須です');
+    errors.push('件名は必須項目です');
   }
   
   if (!data.message.trim()) {
-    errors.push('お問い合わせ内容は必須です');
+    errors.push('本文は必須項目です');
   }
   
   return {
