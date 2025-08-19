@@ -1,8 +1,23 @@
-# Modern Frontend Testing Strategy with Storybook 9.1 
+# Modern Frontend Testing Strategy with Storybook 9.1 + Feature-Sliced Design
 
-## 🎯 「こんな方針でテストできます！」
+## 🎯 プロジェクト概要
 
-このプロジェクトは、**モダンなフロントエンドテスト戦略**の実装例です。Storybook 9.1を中心とした包括的なテストアプローチで、高品質なUIコンポーネントの開発・保守を実現します。
+このプロジェクトは、**モダンなフロントエンドテスト戦略**の実装例です。以下の特徴を持つ実践的なサンプルプロジェクトです：
+
+### ⭐ 主な特徴
+
+- **🧪 Storybook 9.1中心のテスト戦略**: ユーザー体験重視のテスト設計
+- **🏗️ Feature-Sliced Design (FSD)**: スケーラブルで保守性の高いアーキテクチャ  
+- **📋 テスト駆動開発 (TDD)**: BDD形式での段階的品質向上プロセス
+- **🎨 振る舞いテスト重視**: 実装詳細ではなくユーザー体験をテスト
+- **📚 包括的な設計文書**: 開発プロセスから設計仕様まで完全文書化
+
+### 🎯 対象読者
+
+- **フロントエンド開発者**: モダンなテスト戦略を学びたい方
+- **QAエンジニア**: Storybookを活用したテスト自動化に興味がある方  
+- **プロダクトマネージャー**: ユーザーストーリー駆動の開発を実践したい方
+- **アーキテクト**: FSDアーキテクチャの実装例を参考にしたい方
 
 ## 🚀 クイックスタート
 
@@ -15,21 +30,21 @@
 # 1. 依存関係のインストール
 npm install
 
-# 2. Storybookの起動
+# 2. 初回のみ（Browser テスト実行に必要な Playwright のセットアップ）
+npx playwright install --with-deps
+
+# 3. Storybookの起動
 npm run storybook
 # → http://localhost:6006 でStorybookが開きます
 
-# 3. 開発サーバーの起動
+# 4. 開発サーバーの起動
 npm run dev
 # → http://localhost:5173 でアプリケーションが開きます
 
-# 4. テストの実行（CLI）
+# 5. テストの実行（CLI）
 npm run test          # unit + storybook を一括実行
 npm run test:unit     # unit のみ
 npm run test:stories  # Storybook のみ（Play Function など）
-
-# 5. 初回のみ（Browser 実行に必要な Playwright のセットアップ）
-npx playwright install --with-deps
 ```
 
 ### **主要コマンド**
@@ -98,6 +113,28 @@ describe('ContactFormValidation', () => {
 ---
 
 ## 🏗️ アーキテクチャの特徴
+
+### **Feature-Sliced Design (FSD) 構造**
+
+本プロジェクトはFSDアーキテクチャを採用し、以下の階層構造で組織化されています：
+
+```
+src/
+├── app/        # アプリケーション初期化、グローバル設定
+├── pages/      # ページコンポーネント
+├── widgets/    # 複数機能を組み合わせた複雑UIブロック
+├── features/   # ユーザーインタラクションとビジネス機能
+├── entities/   # ビジネスエンティティとドメインロジック
+└── shared/     # 再利用可能なコンポーネント、ユーティリティ
+```
+
+**各レイヤーの責務**:
+- **app**: ルーティング、プロバイダー、グローバルスタイル
+- **pages**: ページの組み立て（widgets/featuresの組み合わせ）
+- **widgets**: 複合的なUIコンポーネント（例: ContactFormWidget）
+- **features**: ビジネス機能の実装（例: contact機能）
+- **entities**: ドメインモデル（今後の拡張用）
+- **shared**: 共通UIコンポーネント、ユーティリティ
 
 ### **Client Componentの設計思想**
 ```typescript
@@ -378,7 +415,38 @@ npx chromatic --project-token=<TOKEN>
 
 ---
 
+## 📁 ディレクトリ構造
+
+```
+src/
+├── app/                    # アプリケーション層
+│   ├── App.tsx             # アプリケーションルート
+│   └── styles/             # グローバルスタイル
+├── pages/                  # ページ層
+│   └── home/               # ホームページ
+├── widgets/                # ウィジェット層
+│   └── contact-form-widget/ # 問い合わせフォームウィジェット
+├── features/               # 機能層
+│   └── contact/            # 問い合わせ機能
+│       ├── ui/             # UIコンポーネント
+│       ├── model/          # 状態管理・ビジネスロジック
+│       ├── api/            # API呼び出し（将来の拡張用）
+│       └── lib/            # ユーティリティ関数
+├── entities/               # エンティティ層（将来の拡張用）
+└── shared/                 # 共有層
+    └── ui/                 # 共通UIコンポーネント
+        └── Button/         # ボタンコンポーネント
+```
+
+各ディレクトリには`index.ts`ファイルがあり、Public APIを定義しています。
+
+---
+
 ## 📚 技術スタック
+
+### **アーキテクチャ**
+- **Feature-Sliced Design**: スケーラブルなフロントエンドアーキテクチャ
+- **Zustand**: 軽量な状態管理ライブラリ
 
 ### **テスト関連**
 - **Storybook 9.1**: UIコンポーネントテスト・ドキュメント
@@ -395,6 +463,40 @@ npx chromatic --project-token=<TOKEN>
 - **React 18**: UIライブラリ
 - **TypeScript**: 型安全性
 - **Vite**: 高速ビルドツール
+
+---
+
+## 📖 設計・仕様文書
+
+プロジェクトの詳細な設計・仕様文書は `/docs` フォルダに整理されています：
+
+### 📋 主要文書
+
+| 文書 | 内容 | 対象読者 |
+|------|------|----------|
+| **[システム設計書](./docs/system-design.md)** | FSDアーキテクチャ、技術スタック、データフロー | 開発者・アーキテクト |
+| **[機能設計書](./docs/functional-specification.md)** | ユーザーストーリー、機能要件、UI/UX仕様 | PO・デザイナー・開発者 |
+| **[テスト仕様書](./docs/test-specification.md)** | テスト戦略、実行結果、品質メトリクス | QA・開発者 |
+| **[API設計書](./docs/api-specification.md)** | エンドポイント、データモデル、エラーハンドリング | バックエンド・フロントエンド開発者 |
+
+### 📊 プロジェクト成果
+
+**テスト実行結果** (全て PASS):
+- **ユニットテスト**: 93/93 tests (100%)
+- **Storybookテスト**: 29/29 tests (100%)
+- **合計**: 122/122 tests (100%)
+
+**実装済み機能**:
+- ✅ 問い合わせフォーム（バリデーション付き）
+- ✅ 自動保存機能（ローカルストレージ）
+- ✅ アクセシビリティ対応
+- ✅ レスポンシブデザイン
+- ✅ 包括的テストスイート
+
+**設計・開発プロセス文書**:
+- ✅ [機能追加時のTDDプロセス](./docs/development-process.md)
+- ✅ [テスト方針・優先順位戦略](./docs/test-specification.md#テスト方針優先順位)
+- ✅ [FSDアーキテクチャ実装フロー](./docs/development-process.md#fsdfeature-sliced-designコンポーネント実装フロー)
 
 ---
 
