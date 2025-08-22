@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Field } from './field';
-import { Input, Textarea } from '@chakra-ui/react';
+import { Input, Textarea } from '@/shared/ui';
 
 const meta = {
   title: 'Shared/UI/Field',

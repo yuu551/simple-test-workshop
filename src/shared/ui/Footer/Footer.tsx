@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text, Stack } from '@chakra-ui/react';
+import { Box, Text, Stack } from '@/shared/ui';
 
 export interface FooterProps {
   copyright?: string;

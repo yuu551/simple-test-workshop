@@ -1,7 +1,5 @@
 import React from 'react';
-import { Stack, Box, Heading, Text } from '@chakra-ui/react';
-import { Button, Header, Footer } from '@/shared/ui';
-import { Badge } from '@chakra-ui/react';
+import { Stack, Box, Heading, Text, Badge, Button, Header, Footer } from '@/shared/ui';
 import { ContactFormWidget } from '@/widgets/contact-form-widget';
 import './HomePage.css';
 

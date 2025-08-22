@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { contactFormSchema, type ContactFormData } from '../model/validation';
 import { useContactFormStore } from '../model/store';
 import { Button } from '@/shared/ui';
-import { Box, VStack, Input, Textarea, Text } from '@chakra-ui/react';
+import { Box, VStack, Input, Textarea, Text } from '@/shared/ui';
 import { Field } from '@/shared/ui/field/field';
 import { Alert } from '@/shared/ui/alert/alert';
 

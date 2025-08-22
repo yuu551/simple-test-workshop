@@ -377,6 +377,6 @@ describe('ContactForm', () => {
     }, { timeout: 1000 });
     
     // ボタンテキストの確認（Chakra UIはloadingTextを使用）
-    expect(submitButton).toHaveTextContent('読み込み中...');
+    expect(submitButton).toHaveTextContent('送信中...');
   });
 });
