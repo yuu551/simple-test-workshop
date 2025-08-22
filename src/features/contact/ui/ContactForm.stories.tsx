@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { screen, userEvent, expect, within } from 'storybook/test';
+import { userEvent, expect, within } from 'storybook/test';
 import { ContactForm } from './ContactForm';
 import { getTestDataByScenarioId } from '../model/testData';
 
 // Simple mock function for Storybook
 const mockFn = () => {
-  const fn = (...args: any[]) => {
+  const fn = (...args: unknown[]) => {
     console.log('Called with:', args);
   };
   fn.mock = { calls: [] };
@@ -69,8 +69,9 @@ export const HappyPath: Story = {
     // Then: フォームが送信され、成功メッセージが表示される
     await userEvent.click(canvas.getByRole('button', { name: /送信する/ }));
     
-    // 送信中の状態を確認
-    await expect(canvas.getByRole('button', { name: /送信中/ })).toBeInTheDocument();
+    // 送信中の状態を確認（Chakra UIのloading状態）
+    const submitButton = canvas.getByRole('button');
+    await expect(submitButton).toHaveAttribute('data-loading');
     
     // 成功メッセージの表示を確認
     await expect(await canvas.findByText(/お問い合わせを受け付けました/)).toBeInTheDocument();

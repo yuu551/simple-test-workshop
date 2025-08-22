@@ -392,9 +392,9 @@ const mockFn = () => {
 
 ### 1. 現在の実行結果
 
-**ユニットテスト**: 93/93 tests passed (100%)  
-**Storybookテスト**: 29/29 tests passed (100%)  
-**合計**: 122/122 tests passed (100%)
+**ユニットテスト**: 69/69 tests passed (100%)  
+**Storybookテスト**: 64/64 tests passed (100%)  
+**合計**: 133/133 tests passed (100%)
 
 ### 2. カバレッジ目標
 

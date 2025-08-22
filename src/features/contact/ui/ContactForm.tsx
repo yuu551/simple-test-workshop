@@ -4,7 +4,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { contactFormSchema, type ContactFormData } from '../model/validation';
 import { useContactFormStore } from '../model/store';
 import { Button } from '@/shared/ui';
-import './ContactForm.css';
+import { Box, VStack, Input, Textarea, Text } from '@chakra-ui/react';
+import { Field } from '@/shared/ui/field/field';
+import { Alert } from '@/shared/ui/alert/alert';
 
 export type { ContactFormData };
 
@@ -98,116 +100,114 @@ export const ContactForm: React.FC<ContactFormProps> = ({
   };
 
   return (
-    <div className="contact-form-container">
+    <Box maxW="600px" mx="auto" p={6}>
       {submitSuccess && (
-        <div className="success-message" role="alert">
-          お問い合わせを受け付けました
-        </div>
+        <Alert status="success" mb={4} colorPalette="green">
+          <Text role="alert" color="form.success">お問い合わせを受け付けました</Text>
+        </Alert>
       )}
       
-      <form onSubmit={handleSubmit(onSubmitHandler)} className="contact-form" noValidate>
-        <div className="form-group">
-          <label htmlFor="name">
-            お名前 <span className="required">*</span>
-          </label>
-          <input
-            id="name"
-            type="text"
-            {...register('name')}
-            aria-invalid={!!errors.name}
-            aria-describedby={errors.name ? 'name-error' : undefined}
-            disabled={isSubmitting}
-          />
-          {errors.name && (
-            <span id="name-error" className="error-message" role="alert">
-              {errors.name.message}
-            </span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="email">
-            メールアドレス <span className="required">*</span>
-          </label>
-          <input
-            id="email"
-            type="email"
-            {...register('email')}
-            aria-invalid={!!errors.email}
-            aria-describedby={errors.email ? 'email-error' : undefined}
-            disabled={isSubmitting}
-          />
-          {errors.email && (
-            <span id="email-error" className="error-message" role="alert">
-              {errors.email.message}
-            </span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="subject">
-            件名 <span className="required">*</span>
-          </label>
-          <input
-            id="subject"
-            type="text"
-            {...register('subject')}
-            aria-invalid={!!errors.subject}
-            aria-describedby={errors.subject ? 'subject-error' : undefined}
-            disabled={isSubmitting}
-          />
-          {errors.subject && (
-            <span id="subject-error" className="error-message" role="alert">
-              {errors.subject.message}
-            </span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="message">
-            お問い合わせ内容 <span className="required">*</span>
-          </label>
-          <textarea
-            id="message"
-            rows={5}
-            {...register('message')}
-            aria-invalid={!!errors.message}
-            aria-describedby={errors.message ? 'message-error' : undefined}
-            disabled={isSubmitting}
-          />
-          {errors.message && (
-            <span id="message-error" className="error-message" role="alert">
-              {errors.message.message}
-            </span>
-          )}
-        </div>
-
-        <div className="form-group">
-          <label className="checkbox-label">
-            <input
-              type="checkbox"
-              {...register('privacyPolicy')}
-              aria-invalid={!!errors.privacyPolicy}
-              aria-describedby={errors.privacyPolicy ? 'privacy-error' : undefined}
+      <form onSubmit={handleSubmit(onSubmitHandler)} noValidate>
+        <VStack gap={4} align="stretch">
+          <Field
+            label={<Text color="contact.label">お名前</Text>}
+            required
+            invalid={!!errors.name}
+            errorText={errors.name?.message}
+          >
+            <Input
+              id="name"
+              type="text"
+              {...register('name')}
+              aria-label="お名前"
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? 'name-error' : undefined}
               disabled={isSubmitting}
             />
-            <span className="required">*</span> プライバシーポリシーに同意する
-          </label>
-          {errors.privacyPolicy && (
-            <span id="privacy-error" className="error-message" role="alert">
-              {errors.privacyPolicy.message}
-            </span>
-          )}
-        </div>
+          </Field>
 
-        <Button 
-          type="submit"
-          disabled={isSubmitting}
-          fullWidth
-        >
-          {isSubmitting ? '送信中...' : '送信する'}
-        </Button>
+          <Field
+            label={<Text color="contact.label">メールアドレス</Text>}
+            required
+            invalid={!!errors.email}
+            errorText={errors.email?.message}
+          >
+            <Input
+              id="email"
+              type="email"
+              {...register('email')}
+              aria-label="メールアドレス"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'email-error' : undefined}
+              disabled={isSubmitting}
+            />
+          </Field>
+
+          <Field
+            label={<Text color="contact.label">件名</Text>}
+            required
+            invalid={!!errors.subject}
+            errorText={errors.subject?.message}
+          >
+            <Input
+              id="subject"
+              type="text"
+              {...register('subject')}
+              aria-label="件名"
+              aria-invalid={!!errors.subject}
+              aria-describedby={errors.subject ? 'subject-error' : undefined}
+              disabled={isSubmitting}
+            />
+          </Field>
+
+          <Field
+            label={<Text color="contact.label">お問い合わせ内容</Text>}
+            required
+            invalid={!!errors.message}
+            errorText={errors.message?.message}
+          >
+            <Textarea
+              id="message"
+              rows={5}
+              {...register('message')}
+              aria-label="お問い合わせ内容"
+              aria-invalid={!!errors.message}
+              aria-describedby={errors.message ? 'message-error' : undefined}
+              disabled={isSubmitting}
+            />
+          </Field>
+
+          <Box>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                {...register('privacyPolicy')}
+                aria-invalid={!!errors.privacyPolicy}
+                aria-describedby={errors.privacyPolicy ? 'privacy-error' : undefined}
+                disabled={isSubmitting}
+                className="custom-checkbox"
+              />
+              <Text as="span" color="contact.label">
+                <Text as="span" color="contact.required">*</Text> プライバシーポリシーに同意する
+              </Text>
+            </label>
+            {errors.privacyPolicy && (
+              <Text id="privacy-error" color="form.error" fontSize="sm" mt={1} role="alert">
+                {errors.privacyPolicy.message}
+              </Text>
+            )}
+          </Box>
+
+          <Button 
+            type="submit"
+            loading={isSubmitting}
+            disabled={isSubmitting}
+            fullWidth
+          >
+            {isSubmitting ? '送信中...' : '送信する'}
+          </Button>
+        </VStack>
       </form>
-    </div>
+    </Box>
   );
 };

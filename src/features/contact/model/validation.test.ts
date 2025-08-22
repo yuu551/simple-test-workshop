@@ -1,12 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { z } from 'zod';
 import {
   contactFormSchema,
   validateForm,
   validateContactForm,
   validateField,
-  type ContactFormData,
-  type ValidationErrors
+  type ContactFormData
 } from './validation';
 
 // Zodスキーマのテスト
