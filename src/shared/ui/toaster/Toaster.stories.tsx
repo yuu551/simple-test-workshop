@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Toaster, toaster } from './toaster';
-import { Button } from '@chakra-ui/react';
+import { Button } from '@/shared/ui';
 import { useEffect } from 'react';
 
 const meta = {

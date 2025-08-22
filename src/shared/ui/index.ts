@@ -15,3 +15,6 @@ export * from './checkbox';
 export * from './field';
 export * from './toaster';
 export * from './tooltip';
+
+// Chakra primitives wrapper exports
+export * from './primitives';

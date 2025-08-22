@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heading, Text, Box } from '@chakra-ui/react';
+import { Heading, Text, Box } from '@/shared/ui';
 
 export interface HeaderProps {
   title: string;

@@ -69,7 +69,7 @@ export const Button: React.FC<ButtonProps> = ({
       onClick,
       type,
       width: fullWidth ? '100%' : 'auto',
-      loadingText: '読み込み中...',
+      loadingText: '送信中...',
       ...props,
     };
   };

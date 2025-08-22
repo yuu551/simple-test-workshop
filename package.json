@@ -29,9 +29,9 @@
     "zustand": "^5.0.7"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^9.1.2",
     "@chromatic-com/storybook": "^4.1.0",
     "@eslint/js": "^9.33.0",
-    "@storybook/addon-a11y": "^9.1.2",
     "@storybook/addon-docs": "^9.1.2",
     "@storybook/addon-onboarding": "^9.1.2",
     "@storybook/addon-vitest": "^9.1.2",
