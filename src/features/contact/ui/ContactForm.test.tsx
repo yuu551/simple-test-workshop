@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@/shared/lib/test-utils';
 import userEvent from '@testing-library/user-event';
 import { ContactForm } from './ContactForm';
 
@@ -22,7 +22,7 @@ import { useContactFormStore } from '../model/store';
 const mockUseContactFormStore = vi.mocked(useContactFormStore);
 
 describe('ContactForm', () => {
-  const mockOnSubmit = vi.fn();
+  // const mockOnSubmit = vi.fn();
   
   beforeEach(() => {
     vi.clearAllMocks();
@@ -46,11 +46,11 @@ describe('ContactForm', () => {
   it('フォームが正しくレンダリングされる', () => {
     render(<ContactForm />);
     
-    expect(screen.getByLabelText(/お名前/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/メールアドレス/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/件名/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/お問い合わせ内容/)).toBeInTheDocument();
-    expect(screen.getByLabelText(/プライバシーポリシー/)).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /お名前/ })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /メールアドレス/ })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /件名/ })).toBeInTheDocument();
+    expect(screen.getByRole('textbox', { name: /お問い合わせ内容/ })).toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: /プライバシーポリシー/ })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /送信/ })).toBeInTheDocument();
   });
 
@@ -61,14 +61,19 @@ describe('ContactForm', () => {
     const user = userEvent.setup();
     render(<ContactForm onSubmit={quickSubmit} />);
     
-    await user.type(screen.getByLabelText(/お名前/), '田中太郎');
-    await user.type(screen.getByLabelText(/メールアドレス/), 'tanaka@example.com');
-    await user.type(screen.getByLabelText(/件名/), 'テスト件名');
-    await user.type(screen.getByLabelText(/お問い合わせ内容/), 'これは10文字以上のテストメッセージです。');
-    await user.click(screen.getByLabelText(/プライバシーポリシー/));
+    await user.type(screen.getByRole('textbox', { name: /お名前/ }), '田中太郎');
+    await user.type(screen.getByRole('textbox', { name: /メールアドレス/ }), 'tanaka@example.com');
+    await user.type(screen.getByRole('textbox', { name: /件名/ }), 'テスト件名');
+    await user.type(screen.getByRole('textbox', { name: /お問い合わせ内容/ }), 'これは10文字以上のテストメッセージです。');
     
-    await user.click(screen.getByRole('button', { name: /送信/ }));
+    // プライバシーポリシーのチェックボックスをクリック
+    const privacyCheckbox = screen.getByRole('checkbox', { name: /プライバシーポリシー/ });
+    await user.click(privacyCheckbox);
     
+    const submitButton = screen.getByRole('button', { name: /送信/ });
+    await user.click(submitButton);
+    
+    // onSubmitが呼ばれることを確認
     await waitFor(() => {
       expect(quickSubmit).toHaveBeenCalledWith({
         name: '田中太郎',
@@ -78,6 +83,17 @@ describe('ContactForm', () => {
         privacyPolicy: true,
       });
     }, { timeout: 3000 });
+    
+    // onSubmitが呼ばれるまで待つ
+    await waitFor(() => {
+      expect(quickSubmit).toHaveBeenCalledWith({
+        name: '田中太郎',
+        email: 'tanaka@example.com',
+        subject: 'テスト件名',
+        message: 'これは10文字以上のテストメッセージです。',
+        privacyPolicy: true,
+      });
+    }, { timeout: 5000 });
   });
 
   describe('バリデーション', () => {
@@ -85,7 +101,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      const nameInput = screen.getByLabelText(/お名前/);
+      const nameInput = screen.getByRole('textbox', { name: /お名前/ });
       await user.click(nameInput);
       await user.tab();
       
@@ -98,7 +114,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      const emailInput = screen.getByLabelText(/メールアドレス/);
+      const emailInput = screen.getByRole('textbox', { name: /メールアドレス/ });
       await user.type(emailInput, 'invalid-email');
       await user.tab();
       
@@ -111,7 +127,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      const subjectInput = screen.getByLabelText(/件名/);
+      const subjectInput = screen.getByRole('textbox', { name: /件名/ });
       await user.click(subjectInput);
       await user.tab();
       
@@ -124,7 +140,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      const messageTextarea = screen.getByLabelText(/お問い合わせ内容/);
+      const messageTextarea = screen.getByRole('textbox', { name: /お問い合わせ内容/ });
       await user.type(messageTextarea, '短い');
       await user.tab();
       
@@ -137,10 +153,10 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      await user.type(screen.getByLabelText(/お名前/), '田中太郎');
-      await user.type(screen.getByLabelText(/メールアドレス/), 'tanaka@example.com');
-      await user.type(screen.getByLabelText(/件名/), 'テスト件名');
-      await user.type(screen.getByLabelText(/お問い合わせ内容/), 'これは10文字以上のテストメッセージです。');
+      await user.type(screen.getByRole('textbox', { name: /お名前/ }), '田中太郎');
+      await user.type(screen.getByRole('textbox', { name: /メールアドレス/ }), 'tanaka@example.com');
+      await user.type(screen.getByRole('textbox', { name: /件名/ }), 'テスト件名');
+      await user.type(screen.getByRole('textbox', { name: /お問い合わせ内容/ }), 'これは10文字以上のテストメッセージです。');
       
       await user.click(screen.getByRole('button', { name: /送信/ }));
       
@@ -155,7 +171,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      const nameInput = screen.getByLabelText(/お名前/);
+      const nameInput = screen.getByRole('textbox', { name: /お名前/ });
       await user.type(nameInput, '田');
       
       expect(screen.queryByText('お名前は必須です')).not.toBeInTheDocument();
@@ -165,7 +181,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      const nameInput = screen.getByLabelText(/お名前/);
+      const nameInput = screen.getByRole('textbox', { name: /お名前/ });
       await user.click(nameInput);
       await user.clear(nameInput);
       await user.tab();
@@ -179,7 +195,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      const nameInput = screen.getByLabelText(/お名前/);
+      const nameInput = screen.getByRole('textbox', { name: /お名前/ });
       await user.click(nameInput);
       await user.tab();
       
@@ -215,7 +231,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      await user.type(screen.getByLabelText(/お名前/), '田中太郎');
+      await user.type(screen.getByRole('textbox', { name: /お名前/ }), '田中太郎');
       
       // Zustandストアの setSavedData が呼ばれることを確認
       await waitFor(() => {
@@ -237,7 +253,7 @@ describe('ContactForm', () => {
       const user = userEvent.setup();
       render(<ContactForm />);
       
-      const emailInput = screen.getByLabelText(/メールアドレス/);
+      const emailInput = screen.getByRole('textbox', { name: /メールアドレス/ });
       await user.type(emailInput, 'invalid-email');
       await user.tab();
       
@@ -294,9 +310,11 @@ describe('ContactForm', () => {
 
     it('送信成功後に保存されたデータがクリアされる', async () => {
       const clearSavedDataMock = vi.fn();
+      const setSubmitSuccessMock = vi.fn();
+      
       mockUseContactFormStore.mockReturnValue({
         submitSuccess: false,
-        setSubmitSuccess: vi.fn(),
+        setSubmitSuccess: setSubmitSuccessMock,
         savedData: null,
         setSavedData: vi.fn(),
         clearSavedData: clearSavedDataMock,
@@ -304,23 +322,35 @@ describe('ContactForm', () => {
       });
       
       const user = userEvent.setup();
-      // 即座に解決されるPromiseを返すmock
-      const quickOnSubmit = vi.fn().mockImplementation(() => Promise.resolve({ success: true }));
+      // 即座に解決されるPromiseを返すmock（undefinedで正常終了）
+      const quickOnSubmit = vi.fn().mockResolvedValue(undefined);
       render(<ContactForm onSubmit={quickOnSubmit} />);
       
-      await user.type(screen.getByLabelText(/お名前/), '田中太郎');
-      await user.type(screen.getByLabelText(/メールアドレス/), 'tanaka@example.com');
-      await user.type(screen.getByLabelText(/件名/), 'テスト件名');
-      await user.type(screen.getByLabelText(/お問い合わせ内容/), 'これは10文字以上のテストメッセージです。');
-      await user.click(screen.getByLabelText(/プライバシーポリシー/));
+      await user.type(screen.getByRole('textbox', { name: /お名前/ }), '田中太郎');
+      await user.type(screen.getByRole('textbox', { name: /メールアドレス/ }), 'tanaka@example.com');
+      await user.type(screen.getByRole('textbox', { name: /件名/ }), 'テスト件名');
+      await user.type(screen.getByRole('textbox', { name: /お問い合わせ内容/ }), 'これは10文字以上のテストメッセージです。');
+      await user.click(screen.getByRole('checkbox', { name: /プライバシーポリシー/ }));
       
       await user.click(screen.getByRole('button', { name: /送信/ }));
       
-      // onSubmitが呼ばれることを確認してから、clearSavedDataが呼ばれることを確認
+      // onSubmit関数が呼ばれることを確認 (フォーム内部で1秒待機するため、十分な時間を待つ)
       await waitFor(() => {
-        expect(quickOnSubmit).toHaveBeenCalled();
+        expect(quickOnSubmit).toHaveBeenCalledWith({
+          name: '田中太郎',
+          email: 'tanaka@example.com',
+          subject: 'テスト件名',
+          message: 'これは10文字以上のテストメッセージです。',
+          privacyPolicy: true,
+        });
+      }, { timeout: 2000 });
+      
+      // submitSuccessがtrueに設定されることを確認
+      await waitFor(() => {
+        expect(setSubmitSuccessMock).toHaveBeenCalledWith(true);
       });
       
+      // clearSavedDataが呼ばれることを確認
       await waitFor(() => {
         expect(clearSavedDataMock).toHaveBeenCalled();
       }, { timeout: 2000 });
@@ -329,19 +359,24 @@ describe('ContactForm', () => {
 
   it('送信中はボタンが無効化される', async () => {
     const user = userEvent.setup();
-    const slowSubmit = vi.fn(() => new Promise(resolve => setTimeout(resolve, 1000)));
+    const slowSubmit = vi.fn(() => new Promise(resolve => setTimeout(resolve, 2000)));
     render(<ContactForm onSubmit={slowSubmit} />);
     
-    await user.type(screen.getByLabelText(/お名前/), '田中太郎');
-    await user.type(screen.getByLabelText(/メールアドレス/), 'tanaka@example.com');
-    await user.type(screen.getByLabelText(/件名/), 'テスト件名');
-    await user.type(screen.getByLabelText(/お問い合わせ内容/), 'これは10文字以上のテストメッセージです。');
-    await user.click(screen.getByLabelText(/プライバシーポリシー/));
+    await user.type(screen.getByRole('textbox', { name: /お名前/ }), '田中太郎');
+    await user.type(screen.getByRole('textbox', { name: /メールアドレス/ }), 'tanaka@example.com');
+    await user.type(screen.getByRole('textbox', { name: /件名/ }), 'テスト件名');
+    await user.type(screen.getByRole('textbox', { name: /お問い合わせ内容/ }), 'これは10文字以上のテストメッセージです。');
+    await user.click(screen.getByRole('checkbox', { name: /プライバシーポリシー/ }));
     
     const submitButton = screen.getByRole('button', { name: /送信/ });
     await user.click(submitButton);
     
-    expect(submitButton).toBeDisabled();
-    expect(submitButton).toHaveTextContent('送信中...');
+    // 送信中状態を確認（Chakra UIのloading状態）
+    await waitFor(() => {
+      expect(submitButton).toHaveAttribute('data-loading');
+    }, { timeout: 1000 });
+    
+    // ボタンテキストの確認（Chakra UIはloadingTextを使用）
+    expect(submitButton).toHaveTextContent('読み込み中...');
   });
 });

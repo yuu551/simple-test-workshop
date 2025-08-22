@@ -35,5 +35,5 @@
       "@/shared/*": ["src/shared/*"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "src/test/vitest.d.ts"]
 }

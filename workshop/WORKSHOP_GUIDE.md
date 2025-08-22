@@ -1,33 +1,41 @@
-# 🚀 モダンフロントエンドテスト - ハンズオン実装ガイド
+# 🚀 モダンフロントエンド開発 - Chakra UI + Feature-Sliced Design ハンズオン
 
 ## 🎯 このガイドで学べること
 
-このハンズオンガイドでは、**ユーザーストーリー → テスト → 実装**の流れで、モダンなフロントエンドテスト戦略を段階的に習得できます。
+このハンズオンガイドでは、**ユーザーストーリー → シナリオ → テスト → 実装**の実践的な開発フローを、Chakra UIとFeature-Sliced Designを使って段階的に習得できます。
 
 ### 🏗️ 作成する成果物
-- **React Hook Form + Zod**による型安全なコンタクトフォーム
-- **Storybook**によるコンポーネントドキュメント
-- **Play Function**による自動インタラクションテスト
-- **Vitest**による包括的な単体テスト
+- **Chakra UI v3**のラッパーコンポーネント
+- **Feature-Sliced Design**による階層的アーキテクチャ
+- **React Hook Form + Zod**による型安全なフォーム
+- **シナリオベース**のStorybookストーリー
+- **Play Function**によるBDD形式の自動テスト
+
+### 📋 実装するユーザーストーリー
+1. **US-001**: 問い合わせフォームから連絡を送信する
+2. **US-003**: 入力途中の内容を保持する
+3. **US-002**: 入力内容を確認してから送信する（演習）
 
 ### ⚡ 前提知識
 - React, TypeScript の基本
 - npm/yarn の使用経験
 - VSCode の基本操作
+- BDD（振る舞い駆動開発）の基礎概念
 
 ---
 
-## 📋 STEP 0: 環境セットアップ
+## 📋 STEP 0: 環境セットアップとFeature-Sliced Design理解
 
 ### 🔧 必要なツール
 ```bash
-# Node.js 18+ の確認
+# Node.js 20+ の確認（20.19+ 推奨）
 node --version
 
 # 推奨: VSCode拡張機能
 # - ES7+ React/Redux/React-Native snippets
 # - TypeScript Importer
 # - Prettier - Code formatter
+# - Chakra UI Snippets
 ```
 
 ### 📦 プロジェクト準備
@@ -39,6 +47,9 @@ cd story-book-sample-modern
 # 依存関係のインストール
 npm install
 
+# Playwrightのセットアップ（初回のみ）
+npx playwright install --with-deps
+
 # Storybookの起動確認
 npm run storybook
 # http://localhost:6006 でStorybookが表示されることを確認
@@ -48,104 +59,291 @@ npm run dev
 # http://localhost:5173 でアプリが表示されることを確認
 ```
 
+### 🏗️ Feature-Sliced Design構造の理解
+```
+src/
+├── app/           # アプリケーション層（最上位）
+│   ├── App.tsx    # ルートコンポーネント
+│   └── providers/ # グローバルプロバイダー
+│       └── provider.tsx  # Chakra UIプロバイダー
+├── pages/         # ページ層
+├── widgets/       # ウィジェット層（複合UI）
+├── features/      # 機能層（ユーザーアクション）
+├── entities/      # エンティティ層（ビジネスエンティティ）
+└── shared/        # 共有層（最下位）
+    ├── ui/        # 共有UIコンポーネント
+    └── theme/     # テーマ設定
+        └── semantic-tokens.ts  # セマンティックトークン
+```
+
+**重要な原則:**
+- **依存関係は下位層のみ**: 上位層は下位層を使用できるが、逆は禁止
+- **shared層**: どこからでも使用可能な汎用コンポーネント
+- **features層**: ユーザーのアクションを実装
+- **widgets層**: 複数のfeatureを統合した複雑なUI
+
+### 🎨 Chakra UIプロバイダーの確認
+```typescript
+// src/app/providers/provider.tsx
+import { ChakraProvider, createSystem, defaultConfig } from "@chakra-ui/react"
+import { semanticTokens } from "@/shared/theme/semantic-tokens"
+
+const customSystem = createSystem(defaultConfig, {
+  semanticTokens,  // セマンティックトークンの適用
+  // その他のカスタマイズ
+})
+
+export function Provider(props) {
+  return (
+    <ChakraProvider value={customSystem}>
+      {props.children}
+    </ChakraProvider>
+  )
+}
+```
+
 ### ✅ 動作確認
 - [ ] Storybookが正常に起動する
-- [ ] 既存のサンプルストーリーが表示される
-- [ ] 開発サーバーが正常に起動する
+- [ ] Chakra UIコンポーネントが表示される
+- [ ] Feature-Sliced Design構造を理解した
+- [ ] セマンティックトークンファイルを確認した
 
 ---
 
-## 📋 STEP 1: 基本的なコンポーネント作成
+## 📋 STEP 1: shared/ui層 - Chakra UIラッパー作成
 
 ### 🎯 目標
-シンプルな入力フィールドコンポーネントを作成し、Storybookで表示する
+Chakra UIコンポーネントのラッパーを作成し、プロジェクト独自のAPIを定義する
 
 ### 📁 ファイル構成
 ```
-src/
-  components/
-    SimpleInput/
-      SimpleInput.tsx
-      SimpleInput.stories.tsx
+src/shared/
+  ui/
+    Button/
+      Button.tsx
+      Button.stories.tsx
+      index.ts
+    Field/
+      Field.tsx
+      Field.stories.tsx
+      index.ts
+  theme/
+    semantic-tokens.ts
 ```
 
 ### 🔨 実装
 
-#### **SimpleInput.tsx**
+#### **Button.tsx - Chakra UIラッパー**
 ```typescript
-// src/components/SimpleInput/SimpleInput.tsx
+// src/shared/ui/Button/Button.tsx
 import React from 'react';
+import { Button as ChakraButton } from '@chakra-ui/react';
+import type { ComponentProps } from 'react';
 
-export interface SimpleInputProps {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  error?: string;
-  required?: boolean;
+type ChakraButtonProps = ComponentProps<typeof ChakraButton>;
+
+export interface ButtonProps {
+  /** ボタンのバリアント */
+  variant?: 'primary' | 'secondary' | 'danger';
+  /** ボタンのサイズ */
+  size?: 'small' | 'medium' | 'large';
+  /** ボタンのテキスト */
+  children: React.ReactNode;
+  /** 無効状態 */
+  disabled?: boolean;
+  /** ローディング状態 */
+  loading?: boolean;
+  /** クリックハンドラー */
+  onClick?: () => void;
+  /** フルサイズ */
+  fullWidth?: boolean;
+  /** タイプ */
+  type?: 'button' | 'submit' | 'reset';
 }
 
-export const SimpleInput: React.FC<SimpleInputProps> = ({
-  label,
-  value,
-  onChange,
-  placeholder,
-  error,
-  required = false
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  size = 'medium',
+  children,
+  disabled = false,
+  loading = false,
+  onClick,
+  fullWidth = false,
+  type = 'button',
+  ...props
 }) => {
+  // プロジェクトのpropsをChakra UIのpropsに変換
+  const getChakraProps = (): ChakraButtonProps => {
+    // バリアント変換（セマンティックトークンを使用）
+    const colorPalette = {
+      primary: 'blue',
+      secondary: 'gray',
+      danger: 'red',
+    }[variant] as 'blue' | 'gray' | 'red';
+
+    const chakraVariant = {
+      primary: 'solid',
+      secondary: 'outline',
+      danger: 'solid',
+    }[variant] as 'solid' | 'outline';
+
+    // サイズ変換
+    const chakraSize = {
+      small: 'sm',
+      medium: 'md',
+      large: 'lg',
+    }[size] as 'sm' | 'md' | 'lg';
+
+    return {
+      colorPalette,
+      variant: chakraVariant,
+      size: chakraSize,
+      loading,
+      disabled,
+      onClick,
+      type,
+      width: fullWidth ? '100%' : 'auto',
+      loadingText: '読み込み中...',
+      ...props,
+    };
+  };
+
   return (
-    <div style={{ marginBottom: '1rem' }}>
-      <label style={{ 
-        display: 'block', 
-        marginBottom: '0.5rem',
-        fontWeight: required ? 'bold' : 'normal'
-      }}>
-        {label}
-        {required && <span style={{ color: 'red' }}>*</span>}
-      </label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          width: '100%',
-          padding: '0.5rem',
-          border: error ? '2px solid red' : '1px solid #ccc',
-          borderRadius: '4px',
-          fontSize: '1rem'
-        }}
-        aria-describedby={error ? `${label}-error` : undefined}
-        aria-required={required}
-      />
-      {error && (
-        <div 
-          id={`${label}-error`}
-          style={{ 
-            color: 'red', 
-            fontSize: '0.875rem', 
-            marginTop: '0.25rem' 
-          }}
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
-    </div>
+    <ChakraButton {...getChakraProps()}>
+      {children}
+    </ChakraButton>
   );
 };
 ```
 
-#### **SimpleInput.stories.tsx**
+#### **Button.stories.tsx**
 ```typescript
-// src/components/SimpleInput/SimpleInput.stories.tsx
+// src/shared/ui/Button/Button.stories.tsx
 import type { Meta, StoryObj } from '@storybook/react';
-import { SimpleInput } from './SimpleInput';
-import { useState } from 'react';
+import { action } from '@storybook/addon-actions';
+import { Button } from './Button';
 
-const meta: Meta<typeof SimpleInput> = {
-  title: 'Components/SimpleInput',
-  component: SimpleInput,
+const meta: Meta<typeof Button> = {
+  title: 'shared/ui/Button',
+  component: Button,
+  parameters: {
+    layout: 'centered',
+  },
+  tags: ['autodocs'],
+  argTypes: {
+    onClick: { action: 'clicked' },
+  },
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Primary: Story = {
+  args: {
+    children: 'プライマリボタン',
+    variant: 'primary',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    children: 'セカンダリボタン',
+    variant: 'secondary',
+  },
+};
+
+export const Danger: Story = {
+  args: {
+    children: '削除する',
+    variant: 'danger',
+  },
+};
+
+export const Loading: Story = {
+  args: {
+    children: '送信',
+    variant: 'primary',
+    loading: true,
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    children: '無効なボタン',
+    variant: 'primary',
+    disabled: true,
+  },
+};
+```
+
+#### **Field.tsx - フォームフィールドラッパー**
+```typescript
+// src/shared/ui/Field/Field.tsx
+import React from 'react';
+import { Field as ChakraField, Input, Textarea } from '@chakra-ui/react';
+import type { FieldProps as ChakraFieldProps } from '@chakra-ui/react';
+
+export interface FieldProps {
+  /** フィールドのラベル */
+  label: string;
+  /** 必須フィールドかどうか */
+  required?: boolean;
+  /** エラー状態 */
+  invalid?: boolean;
+  /** エラーメッセージ */
+  errorText?: string;
+  /** ヘルパーテキスト */
+  helperText?: string;
+  /** 子要素（Input や Textarea） */
+  children: React.ReactElement;
+}
+
+export const Field: React.FC<FieldProps> = ({
+  label,
+  required = false,
+  invalid = false,
+  errorText,
+  helperText,
+  children,
+}) => {
+  // 子要素に必要なpropsを追加
+  const enhancedChild = React.cloneElement(children, {
+    ...children.props,
+    'aria-invalid': invalid,
+    'aria-describedby': errorText ? `${label}-error` : undefined,
+    'aria-required': required,
+  });
+
+  return (
+    <ChakraField.Root invalid={invalid}>
+      <ChakraField.Label>
+        {label}
+        {required && <ChakraField.RequiredIndicator />}
+      </ChakraField.Label>
+      {enhancedChild}
+      {helperText && !errorText && (
+        <ChakraField.HelperText>{helperText}</ChakraField.HelperText>
+      )}
+      {errorText && (
+        <ChakraField.ErrorText id={`${label}-error`}>
+          {errorText}
+        </ChakraField.ErrorText>
+      )}
+    </ChakraField.Root>
+  );
+};
+```
+
+#### **Field.stories.tsx**
+```typescript
+// src/shared/ui/Field/Field.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { Field } from './Field';
+import { Input, Textarea } from '@chakra-ui/react';
+
+const meta: Meta<typeof Field> = {
+  title: 'shared/ui/Field',
+  component: Field,
   parameters: {
     layout: 'centered',
   },
@@ -155,44 +353,61 @@ const meta: Meta<typeof SimpleInput> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// ステートフル版のテンプレート
-const Template = (args: any) => {
-  const [value, setValue] = useState(args.value || '');
-  
-  return (
-    <SimpleInput
-      {...args}
-      value={value}
-      onChange={setValue}
-    />
-  );
-};
-
-export const Default: Story = {
-  render: Template,
+export const WithInput: Story = {
   args: {
-    label: '名前',
-    placeholder: 'お名前を入力してください',
+    label: 'お名前',
+    required: true,
+    children: <Input placeholder="山田太郎" />,
   },
 };
 
-export const Required: Story = {
-  render: Template,
+export const WithTextarea: Story = {
   args: {
-    label: 'メールアドレス',
-    placeholder: 'email@example.com',
+    label: 'お問い合わせ内容',
     required: true,
+    helperText: '10文字以上で入力してください',
+    children: <Textarea placeholder="お問い合わせ内容を入力" rows={4} />,
   },
 };
 
 export const WithError: Story = {
-  render: Template,
   args: {
-    label: '電話番号',
-    placeholder: '090-0000-0000',
-    error: '電話番号の形式が正しくありません',
+    label: 'メールアドレス',
     required: true,
+    invalid: true,
+    errorText: '有効なメールアドレスを入力してください',
+    children: <Input placeholder="email@example.com" />,
   },
+};
+```
+
+#### **index.ts - バレルエクスポート**
+```typescript
+// src/shared/ui/Button/index.ts
+export { Button } from './Button';
+export type { ButtonProps } from './Button';
+
+// src/shared/ui/Field/index.ts
+export { Field } from './Field';
+export type { FieldProps } from './Field';
+```
+
+### 🎨 セマンティックトークンの確認
+```typescript
+// src/shared/theme/semantic-tokens.ts（既存）
+export const semanticTokens = {
+  colors: {
+    // UIステータス
+    'ui.primary': { default: 'blue.500', _dark: 'blue.300' },
+    'ui.secondary': { default: 'gray.500', _dark: 'gray.400' },
+    'ui.danger': { default: 'red.500', _dark: 'red.300' },
+    
+    // フォーム関連
+    'form.border': { default: 'gray.200', _dark: 'gray.600' },
+    'form.border.focus': { default: '{colors.ui.primary}' },
+    'form.border.error': { default: '{colors.ui.danger}' },
+    // ...
+  }
 };
 ```
 
@@ -202,29 +417,801 @@ export const WithError: Story = {
 npm run storybook
 ```
 
-1. **Components/SimpleInput** セクションが表示される
-2. **Default**, **Required**, **WithError** の3つのストーリーが動作する
-3. **Controls** パネルでプロパティを変更できる
-4. **Docs** タブでドキュメントが自動生成される
+1. **shared/ui/Button** と **shared/ui/Field** が表示される
+2. 各バリアントが正しく動作する
+3. Chakra UIのスタイルが適用される
+4. セマンティックトークンが反映される
 
 ### 💡 学習ポイント
-- **アクセシビリティ**: `aria-describedby`, `role="alert"`の使用
-- **TypeScript**: インターフェースによる型安全性
-- **Storybook**: コンポーネント駆動開発のメリット
+- **ラッパーパターン**: UIライブラリの抽象化
+- **Feature-Sliced Design**: shared層の責務
+- **セマンティックトークン**: 一貫性のあるデザインシステム
+- **TypeScript**: 型安全なprops変換
 
 ---
 
-## 📋 STEP 2: React Hook Formの統合
+## 📋 STEP 2: ユーザーストーリーとテストデータ準備
 
 ### 🎯 目標
-React Hook Formを使ったフォームコンポーネントを作成する
+ユーザーストーリーをシナリオに分解し、テストデータを準備する
 
-### 📦 依存関係の確認
-```bash
-# 既にインストール済みを確認
-npm list react-hook-form
-npm list @hookform/resolvers
+### 📋 ユーザーストーリー定義
+
+#### **US-001: 問い合わせフォームから連絡を送信する**
+
 ```
+As a Webサイトの訪問者
+I want 問い合わせフォームから連絡を送信したい
+So that サービスについて質問や相談ができる
+```
+
+**受け入れ基準:**
+- AC-001-1: 名前、メールアドレス、件名、本文が入力できる
+- AC-001-2: 必須項目が未入力の場合、エラーメッセージが表示される
+- AC-001-3: メールアドレスの形式が不正な場合、エラーメッセージが表示される
+- AC-001-4: 送信成功時に確認メッセージが表示される
+
+### 📝 シナリオ詳細（BDD形式）
+
+#### **シナリオ SC-001-1: 正常な問い合わせ送信**
+```gherkin
+Given 問い合わせフォームページを開いている
+When 名前に「田中太郎」を入力する
+And メールアドレスに「tanaka@example.com」を入力する
+And 件名に「サービスについて」を入力する
+And 本文に「詳細を教えてください」を入力する
+And プライバシーポリシーに同意する
+And 送信ボタンをクリックする
+Then 「お問い合わせを受け付けました」というメッセージが表示される
+And フォームがクリアされる
+```
+
+#### **シナリオ SC-001-2: 必須項目未入力でのエラー**
+```gherkin
+Given 問い合わせフォームページを開いている
+When 名前を入力せずに送信ボタンをクリックする
+Then 「お名前は必須です」というエラーメッセージが表示される
+And フォームは送信されない
+```
+
+#### **シナリオ SC-001-3: 不正なメールアドレス形式**
+```gherkin
+Given 問い合わせフォームページを開いている
+When 名前に「田中太郎」を入力する
+And メールアドレスに「invalid-email」を入力する
+And 件名とメッセージを正しく入力する
+And プライバシーポリシーに同意する
+And 送信ボタンをクリックする
+Then 「有効なメールアドレスを入力してください」というエラーメッセージが表示される
+And フォームは送信されない
+```
+
+### 🔨 実装
+
+#### **testData.ts - シナリオベースのテストデータ**
+```typescript
+// src/features/contact/model/testData.ts
+import { type ContactFormData } from './validation';
+
+export interface TestDataSet {
+  scenarioId: string;
+  description: string;
+  data: ContactFormData;
+  expectedResult: 'success' | 'validation_error';
+  expectedErrors?: string[];
+}
+
+/**
+ * シナリオごとのテストデータ定義
+ */
+export const contactFormTestData: TestDataSet[] = [
+  // 成功シナリオ
+  {
+    scenarioId: 'SC-001-1',
+    description: '正常な問い合わせ送信',
+    data: {
+      name: '田中太郎',
+      email: 'tanaka@example.com',
+      subject: 'サービスについて',
+      message: '詳細を教えてください',
+      privacyPolicy: true
+    },
+    expectedResult: 'success'
+  },
+  
+  // エラーシナリオ
+  {
+    scenarioId: 'SC-001-2',
+    description: '必須項目未入力でのエラー',
+    data: {
+      name: '', // 未入力
+      email: '',
+      subject: '',
+      message: '',
+      privacyPolicy: false
+    },
+    expectedResult: 'validation_error',
+    expectedErrors: [
+      'お名前は必須です',
+      'メールアドレスは必須です',
+      '件名は必須です',
+      'お問い合わせ内容は必須です',
+      'プライバシーポリシーに同意してください'
+    ]
+  },
+  
+  {
+    scenarioId: 'SC-001-3',
+    description: '不正なメールアドレス形式',
+    data: {
+      name: '田中太郎',
+      email: 'invalid-email', // 無効な形式
+      subject: 'テスト件名',
+      message: 'テストメッセージです。十文字以上入力しています。',
+      privacyPolicy: true
+    },
+    expectedResult: 'validation_error',
+    expectedErrors: ['有効なメールアドレスを入力してください']
+  }
+];
+
+/**
+ * シナリオIDからテストデータを取得
+ */
+export const getTestDataByScenarioId = (scenarioId: string): TestDataSet | undefined => {
+  return contactFormTestData.find(testData => testData.scenarioId === scenarioId);
+};
+```
+
+#### **validation.ts - Zodスキーマ定義**
+```typescript
+// src/features/contact/model/validation.ts
+import { z } from 'zod';
+
+/**
+ * 問い合わせフォームのバリデーションスキーマ
+ */
+export const contactFormSchema = z.object({
+  name: z.string()
+    .min(1, 'お名前は必須です')
+    .max(100, '名前は100文字以内で入力してください')
+    .trim(),
+  
+  email: z.string()
+    .min(1, 'メールアドレスは必須です')
+    .email('有効なメールアドレスを入力してください')
+    .max(255, 'メールアドレスは255文字以内で入力してください')
+    .trim(),
+  
+  subject: z.string()
+    .min(1, '件名は必須です')
+    .max(200, '件名は200文字以内で入力してください')
+    .trim(),
+  
+  message: z.string()
+    .min(1, 'お問い合わせ内容は必須です')
+    .min(10, 'お問い合わせ内容は10文字以上で入力してください')
+    .max(2000, 'お問い合わせ内容は2000文字以内で入力してください')
+    .trim(),
+  
+  privacyPolicy: z.boolean()
+    .refine(val => val === true, 'プライバシーポリシーに同意してください')
+});
+
+// TypeScript型を自動生成
+export type ContactFormData = z.infer<typeof contactFormSchema>;
+```
+
+#### **index.ts - 機能層のエクスポート**
+```typescript
+// src/features/contact/model/index.ts
+export { contactFormSchema, type ContactFormData } from './validation';
+export { contactFormTestData, getTestDataByScenarioId, type TestDataSet } from './testData';
+```
+
+### 📁 ディレクトリ構造
+```
+src/features/
+  contact/
+    model/
+      validation.ts     # Zodスキーマ
+      testData.ts      # シナリオベースのテストデータ
+      index.ts         # バレルエクスポート
+    ui/                # コンポーネント（次のSTEP）
+```
+
+### 🔍 確認作業
+1. **testData.ts** で各シナリオのデータが定義されている
+2. **validation.ts** でバリデーションルールが明確
+3. **シナリオID** でテストデータを取得できる
+
+### 💡 学習ポイント
+- **ユーザーストーリー**: ビジネス要件の明確化
+- **BDD形式**: Given-When-Thenによるシナリオ記述
+- **テストデータ管理**: シナリオとデータの紐付け
+- **Zodスキーマ**: 宣言的なバリデーション定義
+
+---
+
+## 📋 STEP 3: features/contact層 - シナリオSC-001-1実装
+
+### 🎯 目標
+シナリオSC-001-1（正常な問い合わせ送信）を実装し、Play Functionでテストする
+
+### 🔨 実装
+
+#### **ContactForm.tsx - React Hook Form + Chakra UI統合**
+```typescript
+// src/features/contact/ui/ContactForm.tsx
+import React from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Input, Textarea, Checkbox, Stack, Box, Text } from '@chakra-ui/react';
+import { Button } from '@/shared/ui/Button';
+import { Field } from '@/shared/ui/Field';
+import { Alert } from '@/shared/ui/alert';
+import { contactFormSchema, type ContactFormData } from '../model';
+
+export interface ContactFormProps {
+  onSubmit?: (data: ContactFormData) => void;
+  initialData?: Partial<ContactFormData>;
+}
+
+export const ContactForm: React.FC<ContactFormProps> = ({
+  onSubmit,
+  initialData = {}
+}) => {
+  const [submitStatus, setSubmitStatus] = React.useState<'idle' | 'success' | 'error'>('idle');
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema),
+    mode: 'onBlur',
+    defaultValues: {
+      name: initialData.name || '',
+      email: initialData.email || '',
+      subject: initialData.subject || '',
+      message: initialData.message || '',
+      privacyPolicy: initialData.privacyPolicy || false
+    }
+  });
+
+  const handleFormSubmit = async (data: ContactFormData) => {
+    try {
+      // 送信処理のシミュレート（2秒待機）
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      if (onSubmit) {
+        onSubmit(data);
+      }
+      
+      // 成功メッセージを表示
+      setSubmitStatus('success');
+      
+      // フォームをクリア
+      reset();
+      
+      // 3秒後にメッセージを消す
+      setTimeout(() => {
+        setSubmitStatus('idle');
+      }, 3000);
+    } catch (error) {
+      setSubmitStatus('error');
+    }
+  };
+
+  return (
+    <Box maxW="500px" w="100%">
+      <form onSubmit={handleSubmit(handleFormSubmit)}>
+        <Stack gap={4}>
+          {/* 成功メッセージ */}
+          {submitStatus === 'success' && (
+            <Alert status="success" title="送信完了">
+              <Text>お問い合わせを受け付けました</Text>
+            </Alert>
+          )}
+
+          {/* 名前フィールド */}
+          <Field
+            label="お名前"
+            required
+            invalid={!!errors.name}
+            errorText={errors.name?.message}
+          >
+            <Input {...register('name')} placeholder="山田太郎" />
+          </Field>
+
+          {/* メールアドレスフィールド */}
+          <Field
+            label="メールアドレス"
+            required
+            invalid={!!errors.email}
+            errorText={errors.email?.message}
+          >
+            <Input {...register('email')} placeholder="email@example.com" type="email" />
+          </Field>
+
+          {/* 件名フィールド */}
+          <Field
+            label="件名"
+            required
+            invalid={!!errors.subject}
+            errorText={errors.subject?.message}
+          >
+            <Input {...register('subject')} placeholder="お問い合わせの件名" />
+          </Field>
+
+          {/* メッセージフィールド */}
+          <Field
+            label="お問い合わせ内容"
+            required
+            invalid={!!errors.message}
+            errorText={errors.message?.message}
+            helperText="10文字以上で入力してください"
+          >
+            <Textarea 
+              {...register('message')} 
+              placeholder="お問い合わせ内容を入力してください"
+              rows={5}
+            />
+          </Field>
+
+          {/* プライバシーポリシー同意 */}
+          <Box>
+            <Checkbox {...register('privacyPolicy')}>
+              プライバシーポリシーに同意する
+            </Checkbox>
+            {errors.privacyPolicy && (
+              <Text color="red.500" fontSize="sm" mt={1}>
+                {errors.privacyPolicy.message}
+              </Text>
+            )}
+          </Box>
+
+          {/* 送信ボタン */}
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            loading={isSubmitting}
+            disabled={isSubmitting}
+          >
+            送信する
+          </Button>
+        </Stack>
+      </form>
+    </Box>
+  );
+};
+```
+
+#### **ContactForm.stories.tsx - シナリオベースのストーリー**
+```typescript
+// src/features/contact/ui/ContactForm.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import { action } from '@storybook/addon-actions';
+import { userEvent, within, expect } from '@storybook/test';
+import { ContactForm } from './ContactForm';
+import { getTestDataByScenarioId } from '../model';
+
+const meta: Meta<typeof ContactForm> = {
+  title: 'features/contact/ContactForm',
+  component: ContactForm,
+  parameters: {
+    layout: 'centered',
+  },
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+// デフォルトストーリー
+export const Default: Story = {
+  args: {
+    onSubmit: action('form-submitted'),
+  },
+};
+
+// SC-001-1: 正常な問い合わせ送信
+export const SC_001_1_HappyPath: Story = {
+  name: 'SC-001-1: 正常な問い合わせ送信',
+  args: {
+    onSubmit: action('form-submitted'),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const testData = getTestDataByScenarioId('SC-001-1')!;
+    
+    // Given: 問い合わせフォームページを開いている
+    await expect(canvas.getByLabelText(/お名前/)).toBeInTheDocument();
+    await expect(canvas.getByLabelText(/メールアドレス/)).toBeInTheDocument();
+    await expect(canvas.getByLabelText(/件名/)).toBeInTheDocument();
+    await expect(canvas.getByLabelText(/お問い合わせ内容/)).toBeInTheDocument();
+    
+    // When: 有効な情報を入力する
+    await userEvent.type(canvas.getByLabelText(/お名前/), testData.data.name);
+    await userEvent.type(canvas.getByLabelText(/メールアドレス/), testData.data.email);
+    await userEvent.type(canvas.getByLabelText(/件名/), testData.data.subject);
+    await userEvent.type(canvas.getByLabelText(/お問い合わせ内容/), testData.data.message);
+    
+    // プライバシーポリシーに同意する
+    await userEvent.click(canvas.getByLabelText(/プライバシーポリシーに同意する/));
+    
+    // 送信ボタンをクリックする
+    const submitButton = canvas.getByRole('button', { name: /送信する/ });
+    await userEvent.click(submitButton);
+    
+    // Then: フォームが送信される
+    await expect(submitButton).toHaveTextContent('読み込み中...');
+    
+    // 成功メッセージが表示される
+    await expect(await canvas.findByText(/お問い合わせを受け付けました/)).toBeInTheDocument();
+  },
+};
+
+// 初期データありのストーリー
+export const WithInitialData: Story = {
+  name: '初期データあり',
+  args: {
+    onSubmit: action('form-submitted'),
+    initialData: getTestDataByScenarioId('SC-001-1')?.data,
+  },
+};
+```
+
+#### **index.ts - UIコンポーネントのエクスポート**
+```typescript
+// src/features/contact/ui/index.ts
+export { ContactForm } from './ContactForm';
+export type { ContactFormProps } from './ContactForm';
+```
+
+### 📁 最終的なディレクトリ構造
+```
+src/features/
+  contact/
+    model/
+      validation.ts
+      testData.ts
+      index.ts
+    ui/
+      ContactForm.tsx
+      ContactForm.stories.tsx
+      index.ts
+```
+
+### 🔍 確認作業
+```bash
+# Storybookを再起動
+npm run storybook
+```
+
+1. **features/contact/ContactForm** が表示される
+2. **SC-001-1: 正常な問い合わせ送信** ストーリーを選択
+3. **Interactions** パネルでPlay Functionが実行される
+4. フォーム入力 → 送信 → 成功メッセージの流れを確認
+
+### 💡 学習ポイント
+- **React Hook Form + Chakra UI**: フォーム管理とUIの統合
+- **シナリオベースのテスト**: Play Functionでシナリオを再現
+- **Feature-Sliced Design**: features層での機能実装
+- **BDDアプローチ**: Given-When-Thenによるテスト記述
+
+---
+
+## 📋 STEP 4: エラーシナリオの実装
+
+### 🎯 目標
+エラーシナリオ（SC-001-2, SC-001-3）を実装し、フォームバリデーションのテストを完成させる
+
+### 📋 エラーシナリオの詳細
+
+#### **シナリオ SC-001-2: 必須項目未入力でのエラー**
+```gherkin
+Given 問い合わせフォームページを開いている
+When 名前を入力せずに送信ボタンをクリックする
+Then 「お名前は必須です」というエラーメッセージが表示される
+And フォームは送信されない
+```
+
+#### **シナリオ SC-001-3: 不正なメールアドレス形式**
+```gherkin
+Given 問い合わせフォームページを開いている
+When すべての必須項目を入力する
+And メールアドレスに不正な形式を入力する
+Then 「有効なメールアドレスを入力してください」というエラーメッセージが表示される
+And フォームは送信されない
+```
+
+### 🔨 実装
+
+#### **1. ContactForm.stories.tsx にエラーシナリオ追加**
+```typescript
+// src/features/contact/ui/ContactForm.stories.tsx に追加
+
+export const SC_001_2_RequiredFieldError: Story = {
+  name: 'SC-001-2: 必須項目未入力でのエラー',
+  args: {
+    onSubmit: action('form-submitted'),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const testData = getTestDataByScenarioId('SC-001-2')!;
+    
+    // Given: 問い合わせフォームページを開いている
+    await expect(canvas.getByLabelText(/お名前/)).toBeInTheDocument();
+    await expect(canvas.getByLabelText(/メールアドレス/)).toBeInTheDocument();
+    
+    // When: 名前を空のまま他の項目を入力
+    // 名前フィールドはからのまま
+    await userEvent.type(canvas.getByLabelText(/メールアドレス/), testData.data.email);
+    await userEvent.type(canvas.getByLabelText(/件名/), testData.data.subject);
+    await userEvent.type(canvas.getByLabelText(/お問い合わせ内容/), testData.data.message);
+    await userEvent.click(canvas.getByLabelText(/プライバシーポリシーに同意する/));
+    
+    // 名前フィールドにフォーカスを当てて外す（バリデーション発火）
+    const nameField = canvas.getByLabelText(/お名前/);
+    await userEvent.click(nameField);
+    await userEvent.tab();
+    
+    // Then: エラーメッセージが表示される
+    await expect(canvas.getByText('お名前は必須です')).toBeInTheDocument();
+    
+    // And: 送信ボタンをクリックしてもフォームは送信されない
+    const submitButton = canvas.getByRole('button', { name: /送信する/ });
+    await userEvent.click(submitButton);
+    
+    // 送信処理が実行されず、ボタンが「送信する」のまま
+    await expect(submitButton).toHaveTextContent('送信する');
+    
+    // フォームリセットされていないことを確認
+    await expect(canvas.getByLabelText(/メールアドレス/)).toHaveValue(testData.data.email);
+  },
+};
+
+export const SC_001_3_InvalidEmailError: Story = {
+  name: 'SC-001-3: 不正なメールアドレス形式',
+  args: {
+    onSubmit: action('form-submitted'),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const testData = getTestDataByScenarioId('SC-001-3')!;
+    
+    // Given: 問い合わせフォームページを開いている
+    await expect(canvas.getByLabelText(/お名前/)).toBeInTheDocument();
+    
+    // When: すべての必須項目を入力（メールアドレスのみ不正な形式）
+    await userEvent.type(canvas.getByLabelText(/お名前/), testData.data.name);
+    await userEvent.type(canvas.getByLabelText(/メールアドレス/), testData.data.email); // 不正な形式
+    await userEvent.type(canvas.getByLabelText(/件名/), testData.data.subject);
+    await userEvent.type(canvas.getByLabelText(/お問い合わせ内容/), testData.data.message);
+    await userEvent.click(canvas.getByLabelText(/プライバシーポリシーに同意する/));
+    
+    // メールアドレスフィールドからフォーカスを外してバリデーション発火
+    const emailField = canvas.getByLabelText(/メールアドレス/);
+    await userEvent.tab(); // フォーカスを外す
+    
+    // Then: エラーメッセージが表示される
+    await expect(canvas.getByText('有効なメールアドレスを入力してください')).toBeInTheDocument();
+    
+    // And: 送信ボタンをクリックしてもフォームは送信されない
+    const submitButton = canvas.getByRole('button', { name: /送信する/ });
+    await userEvent.click(submitButton);
+    
+    // 送信処理が実行されない
+    await expect(submitButton).toHaveTextContent('送信する');
+    
+    // 他の入力値は保持されている
+    await expect(canvas.getByLabelText(/お名前/)).toHaveValue(testData.data.name);
+    await expect(canvas.getByLabelText(/件名/)).toHaveValue(testData.data.subject);
+  },
+};
+
+// すべてのバリデーションエラーを一度に確認するシナリオ
+export const MultipleValidationErrors: Story = {
+  name: '複数のバリデーションエラー確認',
+  args: {
+    onSubmit: action('form-submitted'),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    
+    // Given: フォームが表示される
+    await expect(canvas.getByLabelText(/お名前/)).toBeInTheDocument();
+    
+    // When: 各フィールドに不正な値を入力
+    
+    // 名前: 空のまま
+    const nameField = canvas.getByLabelText(/お名前/);
+    await userEvent.click(nameField);
+    await userEvent.tab();
+    
+    // メールアドレス: 不正な形式
+    const emailField = canvas.getByLabelText(/メールアドレス/);
+    await userEvent.type(emailField, 'invalid-email-format');
+    await userEvent.tab();
+    
+    // 件名: 空のまま
+    const subjectField = canvas.getByLabelText(/件名/);
+    await userEvent.click(subjectField);
+    await userEvent.tab();
+    
+    // メッセージ: 短すぎる（10文字未満）
+    const messageField = canvas.getByLabelText(/お問い合わせ内容/);
+    await userEvent.type(messageField, '短い文');
+    await userEvent.tab();
+    
+    // プライバシーポリシー: チェックしないまま送信を試みる
+    const submitButton = canvas.getByRole('button', { name: /送信する/ });
+    await userEvent.click(submitButton);
+    
+    // Then: 各フィールドにエラーメッセージが表示される
+    await expect(canvas.getByText('お名前は必須です')).toBeInTheDocument();
+    await expect(canvas.getByText('有効なメールアドレスを入力してください')).toBeInTheDocument();
+    await expect(canvas.getByText('件名は必須です')).toBeInTheDocument();
+    await expect(canvas.getByText('お問い合わせ内容は10文字以上で入力してください')).toBeInTheDocument();
+    await expect(canvas.getByText('プライバシーポリシーへの同意が必要です')).toBeInTheDocument();
+    
+    // フォームは送信されない
+    await expect(submitButton).toHaveTextContent('送信する');
+  },
+};
+
+// エラー状態からの回復テスト
+export const ErrorRecovery: Story = {
+  name: 'エラー状態からの回復',
+  args: {
+    onSubmit: action('form-submitted'),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    
+    // Given: 最初に不正な値を入力してエラーを発生させる
+    const nameField = canvas.getByLabelText(/お名前/);
+    const emailField = canvas.getByLabelText(/メールアドレス/);
+    
+    // 不正なメールアドレスを入力
+    await userEvent.type(emailField, 'invalid-email');
+    await userEvent.tab();
+    
+    // Then: エラーメッセージが表示される
+    await expect(canvas.getByText('有効なメールアドレスを入力してください')).toBeInTheDocument();
+    
+    // When: 正しい値に修正する
+    await userEvent.clear(emailField);
+    await userEvent.type(emailField, 'valid@example.com');
+    await userEvent.tab();
+    
+    // Then: エラーメッセージが消える
+    await expect(canvas.queryByText('有効なメールアドレスを入力してください')).not.toBeInTheDocument();
+    
+    // 他の必要な項目を入力
+    await userEvent.type(nameField, '田中太郎');
+    await userEvent.type(canvas.getByLabelText(/件名/), 'テスト件名');
+    await userEvent.type(canvas.getByLabelText(/お問い合わせ内容/), 'これは10文字以上のテストメッセージです。');
+    await userEvent.click(canvas.getByLabelText(/プライバシーポリシーに同意する/));
+    
+    // 送信ボタンをクリック
+    const submitButton = canvas.getByRole('button', { name: /送信する/ });
+    await userEvent.click(submitButton);
+    
+    // 送信処理が実行される（ローディング状態）
+    await expect(submitButton).toHaveTextContent('読み込み中...');
+    
+    // 成功メッセージが表示される
+    await expect(await canvas.findByText(/お問い合わせを受け付けました/)).toBeInTheDocument();
+  },
+};
+```
+
+#### **2. testData.ts にエラーシナリオのデータ追加**
+```typescript
+// src/features/contact/model/testData.ts に追加
+
+export const contactFormTestData: TestDataSet[] = [
+  // 既存の SC-001-1 データ...
+  
+  // SC-001-2: 必須項目未入力でのエラー
+  {
+    scenarioId: 'SC-001-2',
+    description: '必須項目未入力でのエラー',
+    data: {
+      name: '', // 未入力でエラーを発生させる
+      email: 'test@example.com',
+      subject: 'テスト件名',
+      message: 'テストメッセージです。十文字以上で入力しています。',
+      privacyPolicy: true,
+    },
+    expectedResult: 'validation_error',
+    expectedErrors: ['お名前は必須です'],
+  },
+  
+  // SC-001-3: 不正なメールアドレス形式
+  {
+    scenarioId: 'SC-001-3',
+    description: '不正なメールアドレス形式でのエラー',
+    data: {
+      name: '田中太郎',
+      email: 'invalid-email-format', // 不正な形式でエラーを発生させる
+      subject: 'テスト件名',
+      message: 'テストメッセージです。十文字以上で入力しています。',
+      privacyPolicy: true,
+    },
+    expectedResult: 'validation_error',
+    expectedErrors: ['有効なメールアドレスを入力してください'],
+  },
+  
+  // 複数エラーのテストデータ
+  {
+    scenarioId: 'SC-001-4',
+    description: '複数フィールドでのバリデーションエラー',
+    data: {
+      name: '',
+      email: 'invalid-email',
+      subject: '',
+      message: '短い',
+      privacyPolicy: false,
+    },
+    expectedResult: 'validation_error',
+    expectedErrors: [
+      'お名前は必須です',
+      '有効なメールアドレスを入力してください',
+      '件名は必須です',
+      'お問い合わせ内容は10文字以上で入力してください',
+      'プライバシーポリシーへの同意が必要です',
+    ],
+  },
+];
+```
+
+### 🧪 テストの実行と確認
+
+```bash
+# Storybookでビジュアル確認
+npm run storybook
+# → 「features/contact/ContactForm」の新しいエラーシナリオを確認
+
+# Play Functionの実行確認
+npm run test:stories
+# → エラーシナリオのテストが通ることを確認
+```
+
+### 📊 エラーハンドリングのベストプラクティス
+
+#### **1. ユーザビリティの向上**
+- **onBlurモード**: 入力中にエラーを表示しない
+- **明確なエラーメッセージ**: 何が間違っているか、どう修正するか明示
+- **視覚的フィードバック**: Chakra UIのinvalid状態でフィールドを強調
+
+#### **2. アクセシビリティ対応**
+```typescript
+// Fieldコンポーネントでの適切なaria属性
+'aria-invalid': invalid,
+'aria-describedby': errorText ? `${label}-error` : undefined,
+'aria-required': required,
+
+// エラーメッセージの適切な関連付け
+<ChakraField.ErrorText role="alert" id={`${label}-error`}>
+  {errorText}
+</ChakraField.ErrorText>
+```
+
+#### **3. エラー状態の管理**
+- **一貫性**: 全フィールドで同じバリデーションタイミング
+- **回復可能**: エラー状態から簡単に正常状態に戻れる
+- **フィードバック**: 修正後すぐにエラーが消える
+
+### 💡 学習ポイント
+- **シナリオベーステスト**: BDD形式でユーザー視点のテスト
+- **エラーハンドリング**: ユーザビリティとアクセシビリティの両立
+- **Play Function**: インタラクティブなテストの自動化
+- **Chakra UI統合**: エラー状態の視覚的表現
 
 ### 🔨 実装
 

@@ -1,4 +1,4 @@
-# Modern Frontend Testing Strategy with Storybook 9.1 + Feature-Sliced Design
+# Modern Frontend Testing Strategy with Storybook 9.1 + Chakra UI v3 + Feature-Sliced Design
 
 ## 🎯 プロジェクト概要
 
@@ -8,8 +8,9 @@
 
 - **🧪 Storybook 9.1中心のテスト戦略**: ユーザー体験重視のテスト設計
 - **🏗️ Feature-Sliced Design (FSD)**: スケーラブルで保守性の高いアーキテクチャ  
+- **🎨 Chakra UI v3**: モダンなコンポーネントライブラリとセマンティックトークン
 - **📋 テスト駆動開発 (TDD)**: BDD形式での段階的品質向上プロセス
-- **🎨 振る舞いテスト重視**: 実装詳細ではなくユーザー体験をテスト
+- **🎯 セマンティックトークン**: 一貫性のあるデザインシステムの実現
 - **📚 包括的な設計文書**: 開発プロセスから設計仕様まで完全文書化
 
 ### 🎯 対象読者
@@ -121,20 +122,23 @@ describe('ContactFormValidation', () => {
 ```
 src/
 ├── app/        # アプリケーション初期化、グローバル設定
+│   └── providers/  # Chakra UIプロバイダー設定
 ├── pages/      # ページコンポーネント
 ├── widgets/    # 複数機能を組み合わせた複雑UIブロック
 ├── features/   # ユーザーインタラクションとビジネス機能
 ├── entities/   # ビジネスエンティティとドメインロジック
 └── shared/     # 再利用可能なコンポーネント、ユーティリティ
+    ├── ui/     # Chakra UIラッパーコンポーネント
+    └── theme/  # セマンティックトークン定義
 ```
 
 **各レイヤーの責務**:
-- **app**: ルーティング、プロバイダー、グローバルスタイル
+- **app**: ルーティング、プロバイダー、グローバル設定、Chakra UI初期化
 - **pages**: ページの組み立て（widgets/featuresの組み合わせ）
 - **widgets**: 複合的なUIコンポーネント（例: ContactFormWidget）
 - **features**: ビジネス機能の実装（例: contact機能）
 - **entities**: ドメインモデル（今後の拡張用）
-- **shared**: 共通UIコンポーネント、ユーティリティ
+- **shared**: 共通UIコンポーネント（Chakra UIラッパー）、テーマ、ユーティリティ
 
 ### **Client Componentの設計思想**
 ```typescript
@@ -152,6 +156,59 @@ function GoodComponent({ userData, onSubmit }: Props) {
   // 純粋な表示ロジックのみ
   return <form onSubmit={onSubmit}>...</form>;
 }
+```
+
+### **Chakra UIラッパーパターン**
+
+UIライブラリの直接的な依存を避けるため、全てのChakra UIコンポーネントはラッパーを介して使用します：
+
+```typescript
+// ❌ 避けるべき：直接インポート
+import { Button } from '@chakra-ui/react';
+
+// ✅ 推奨：ラッパー経由
+import { Button } from '@/shared/ui/Button';
+
+// ラッパーの実装例（shared/ui/Button/Button.tsx）
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  size = 'medium',
+  ...props
+}) => {
+  const colorPalette = {
+    primary: 'blue',
+    secondary: 'gray',
+  }[variant];
+
+  return <ChakraButton colorPalette={colorPalette} {...props} />;
+};
+```
+
+### **セマンティックトークンによるデザインシステム**
+
+一貫性のあるデザインを実現するため、セマンティックトークンを活用：
+
+```typescript
+// shared/theme/semantic-tokens.ts
+export const semanticTokens = {
+  colors: {
+    // ブランドカラー
+    'brand.primary': { default: '#0066CC', _dark: '#4A9EFF' },
+    
+    // UIステータス
+    'ui.success': { default: 'green.500', _dark: 'green.300' },
+    'ui.danger': { default: 'red.500', _dark: 'red.300' },
+    
+    // テキスト
+    'text.primary': { default: 'gray.800', _dark: 'gray.100' },
+    'text.secondary': { default: 'gray.600', _dark: 'gray.400' }
+  }
+};
+
+// 使用例
+<Box color="text.primary" bg="brand.primary">
+  コンテンツ
+</Box>
 ```
 
 ### **テスト責任の明確な分離**
@@ -277,6 +334,43 @@ export const contactFormSchema = z.object({
 
 // 型推論でTypeScript型を自動生成
 export type ContactFormData = z.infer<typeof contactFormSchema>;
+```
+
+### **Chakra UIとの統合例**
+
+```typescript
+// ContactForm.tsx - Chakra UIのFieldコンポーネントを使用
+import { Field } from '@/shared/ui/field';
+import { Button } from '@/shared/ui/Button';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+export const ContactForm = () => {
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactFormSchema)
+  });
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Field
+        label="お名前"
+        required
+        invalid={!!errors.name}
+        errorText={errors.name?.message}
+      >
+        <input {...register('name')} />
+      </Field>
+      
+      <Button type="submit" variant="primary">
+        送信する
+      </Button>
+    </form>
+  );
+};
 ```
 
 ### **テストデータ管理システム**
@@ -421,7 +515,10 @@ npx chromatic --project-token=<TOKEN>
 src/
 ├── app/                    # アプリケーション層
 │   ├── App.tsx             # アプリケーションルート
-│   └── styles/             # グローバルスタイル
+│   ├── index.tsx           # エントリーポイント
+│   └── providers/          # プロバイダー設定
+│       ├── provider.tsx    # Chakra UIプロバイダー
+│       └── color-mode.tsx  # カラーモード設定
 ├── pages/                  # ページ層
 │   └── home/               # ホームページ
 ├── widgets/                # ウィジェット層
@@ -434,8 +531,14 @@ src/
 │       └── lib/            # ユーティリティ関数
 ├── entities/               # エンティティ層（将来の拡張用）
 └── shared/                 # 共有層
-    └── ui/                 # 共通UIコンポーネント
-        └── Button/         # ボタンコンポーネント
+    ├── ui/                 # Chakra UIラッパーコンポーネント
+    │   ├── Button/         # ボタンラッパー
+    │   ├── field/          # フィールドラッパー
+    │   ├── checkbox/       # チェックボックスラッパー
+    │   ├── alert/          # アラートラッパー
+    │   └── toaster/        # トースターラッパー
+    └── theme/              # テーマ設定
+        └── semantic-tokens.ts # セマンティックトークン定義
 ```
 
 各ディレクトリには`index.ts`ファイルがあり、Public APIを定義しています。
@@ -447,6 +550,11 @@ src/
 ### **アーキテクチャ**
 - **Feature-Sliced Design**: スケーラブルなフロントエンドアーキテクチャ
 - **Zustand**: 軽量な状態管理ライブラリ
+
+### **UIフレームワーク**
+- **Chakra UI v3**: モダンなコンポーネントライブラリ
+- **Emotion**: CSS-in-JSライブラリ（Chakra UIの依存関係）
+- **セマンティックトークン**: 一貫性のあるデザインシステム
 
 ### **テスト関連**
 - **Storybook 9.1**: UIコンポーネントテスト・ドキュメント
@@ -460,7 +568,7 @@ src/
 - **@hookform/resolvers**: Zodとの統合
 
 ### **開発基盤**
-- **React 18**: UIライブラリ
+- **React 19**: UIライブラリ
 - **TypeScript**: 型安全性
 - **Vite**: 高速ビルドツール
 
@@ -482,9 +590,9 @@ src/
 ### 📊 プロジェクト成果
 
 **テスト実行結果** (全て PASS):
-- **ユニットテスト**: 93/93 tests (100%)
-- **Storybookテスト**: 29/29 tests (100%)
-- **合計**: 122/122 tests (100%)
+- **ユニットテスト**: 69/69 tests (100%)
+- **Storybookテスト**: 64/64 tests (100%)
+- **合計**: 133/133 tests (100%)
 
 **実装済み機能**:
 - ✅ 問い合わせフォーム（バリデーション付き）
@@ -506,6 +614,11 @@ src/
 1. **副作用の最小化**: APIコールやグローバル状態変更を避ける
 2. **Props駆動**: 外部データは必ずPropsとして受け取る
 3. **Pure Function**: 同じ入力に対して同じ出力を保証
+
+### **Chakra UI使用規則**
+1. **ラッパー経由の使用**: 直接インポートを避け、`@/shared/ui`から使用
+2. **セマンティックトークン優先**: 直接的な色指定ではなくトークンを使用
+3. **一貫性のあるprops命名**: プロジェクト独自のAPIを維持
 
 ### **テストの優先順位**
 1. **Happy Path**: まず正常フローを確実にテスト

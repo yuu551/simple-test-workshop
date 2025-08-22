@@ -2,13 +2,15 @@
 
 ## 🚀 チートシート
 
-### React Hook Form + Zod 基本パターン
+### React Hook Form + Zod + Chakra UI 基本パターン
 
-#### **基本的なフォーム設定**
+#### **基本的なフォーム設定（Chakra UI統合）**
 ```typescript
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { Field } from '@/shared/ui/field';
+import { Button } from '@/shared/ui/Button';
 
 // Zodスキーマ定義
 const schema = z.object({
@@ -29,6 +31,23 @@ const {
   resolver: zodResolver(schema),
   mode: 'onBlur', // リアルタイムバリデーション
 });
+
+// フォームレンダリング（Chakra UI）
+return (
+  <form onSubmit={handleSubmit(onSubmit)}>
+    <Field 
+      label="名前" 
+      required
+      invalid={!!errors.name}
+      errorText={errors.name?.message}
+    >
+      <input {...register('name')} />
+    </Field>
+    <Button type="submit" variant="primary" loading={isSubmitting}>
+      送信
+    </Button>
+  </form>
+);
 ```
 
 #### **よく使うZodバリデーション**
@@ -83,22 +102,107 @@ const schema = z.object({
 });
 ```
 
+### Chakra UI ラッパーパターン
+
+#### **ラッパーコンポーネントの作成**
+```typescript
+// shared/ui/Button/Button.tsx
+import { Button as ChakraButton } from '@chakra-ui/react';
+
+export interface ButtonProps {
+  variant?: 'primary' | 'secondary';
+  size?: 'small' | 'medium' | 'large';
+  children: React.ReactNode;
+  loading?: boolean;
+  onClick?: () => void;
+}
+
+export const Button: React.FC<ButtonProps> = ({
+  variant = 'primary',
+  size = 'medium',
+  ...props
+}) => {
+  const colorPalette = {
+    primary: 'blue',
+    secondary: 'gray',
+  }[variant];
+
+  const chakraSize = {
+    small: 'sm',
+    medium: 'md',
+    large: 'lg',
+  }[size];
+
+  return (
+    <ChakraButton 
+      colorPalette={colorPalette} 
+      size={chakraSize}
+      {...props}
+    />
+  );
+};
+```
+
+### セマンティックトークンパターン
+
+#### **セマンティックトークンの使用**
+```typescript
+// 色の使用
+// ❌ 避けるべき：直接的な色指定
+<Box bg="blue.500" color="white">Content</Box>
+<Badge colorScheme="green">Success</Badge>
+
+// ✅ 推奨：セマンティックトークンを使用
+<Box bg="brand.primary" color="text.primary">Content</Box>
+<Badge colorScheme="status.success">Success</Badge>
+
+// フォーム要素での使用
+<Field
+  borderColor="form.border"
+  _focus={{ borderColor: "form.border.focus" }}
+  _invalid={{ borderColor: "form.border.error" }}
+>
+  <input />
+</Field>
+```
+
+#### **セマンティックトークンの定義例**
+```typescript
+// shared/theme/semantic-tokens.ts
+export const semanticTokens = {
+  colors: {
+    // ブランドカラー
+    'brand.primary': { default: '#0066CC', _dark: '#4A9EFF' },
+    
+    // ステータスカラー
+    'status.success': { default: 'green.500', _dark: 'green.300' },
+    'status.error': { default: 'red.500', _dark: 'red.300' },
+    
+    // インタラクティブ要素
+    'interactive.primary': { 
+      default: '{colors.brand.primary}',
+      _hover: '#0052A3'
+    }
+  }
+};
+```
+
 ### Storybook パターン
 
-#### **基本的なストーリー構造**
+#### **基本的なストーリー構造（Chakra UI対応）**
 ```typescript
 import type { Meta, StoryObj } from '@storybook/react';
 import { action } from '@storybook/addon-actions';
 import { MyComponent } from './MyComponent';
 
 const meta: Meta<typeof MyComponent> = {
-  title: 'Components/MyComponent',
+  title: 'shared/ui/MyComponent',  // Feature-Sliced Design準拠
   component: MyComponent,
   parameters: {
     layout: 'centered',
     docs: {
       description: {
-        component: 'コンポーネントの説明'
+        component: 'Chakra UIラッパーコンポーネント'
       }
     }
   },
@@ -194,7 +298,44 @@ test('API call test', async () => {
 
 ### よくあるエラーと解決方法
 
-#### **1. Storybookが起動しない**
+#### **1. Chakra UIのプロバイダーエラー**
+
+**エラー例:**
+```
+Error: useChakra: `chakra` context is undefined
+```
+
+**解決方法:**
+```typescript
+// .storybook/preview.tsx で Chakra UI プロバイダーを設定
+import { Provider } from '../src/app/providers';
+
+export const decorators = [
+  (Story) => (
+    <Provider>
+      <Story />
+    </Provider>
+  )
+];
+```
+
+#### **2. セマンティックトークンが適用されない**
+
+**原因と解決方法:**
+```typescript
+// ❌ 間違い: トークン名の誤り
+<Box bg="brand-primary">Content</Box>
+
+// ✅ 正解: ドット記法を使用
+<Box bg="brand.primary">Content</Box>
+
+// テーマ設定の確認
+const customSystem = createSystem(defaultConfig, {
+  semanticTokens: semanticTokens
+});
+```
+
+#### **3. Storybookが起動しない**
 
 **エラー例:**
 ```
@@ -324,7 +465,35 @@ test('slow test', async () => {
 
 ## ❓ よくある質問 (FAQ)
 
-### **Q1: Storybookとテストの使い分けは？**
+### **Q1: なぜChakra UIを直接使わずラッパーを作るの？**
+
+**A:** 以下の理由からラッパーパターンを採用しています：
+
+1. **ライブラリ変更への耐性**: 将来的にUIライブラリを変更する際の影響を最小限に
+2. **一貫したAPI**: プロジェクト独自のprops命名規則を維持
+3. **破壊的変更への対応**: ライブラリのアップデートによる影響を局所化
+
+```typescript
+// ラッパーがあれば、Chakra UIの変更はラッパー内で吸収
+export const Button = ({ variant, ...props }) => {
+  // ここでChakra UIの破壊的変更に対応
+  return <ChakraButton {...mapProps(props)} />;
+};
+```
+
+### **Q2: セマンティックトークンの命名規則は？**
+
+**A:** 以下の階層的な命名規則を使用：
+
+```typescript
+// カテゴリ.用途.状態
+'brand.primary'        // ブランドカラーのプライマリ
+'ui.success'          // UI要素の成功状態
+'text.secondary'      // テキストのセカンダリ
+'form.border.focus'   // フォームのボーダーのフォーカス状態
+```
+
+### **Q3: Storybookとテストの使い分けは？**
 
 **A:** 以下の基準で使い分けます：
 
@@ -485,6 +654,8 @@ expect(canvas.getByLabelText('Name')).toHaveFocus();
 ### **コンポーネント作成時**
 - [ ] TypeScript型定義が適切
 - [ ] Props インターフェースの定義
+- [ ] Chakra UIラッパー経由での実装
+- [ ] セマンティックトークンの使用
 - [ ] アクセシビリティ属性（aria-*, role）
 - [ ] エラーハンドリング
 - [ ] デフォルトProps
@@ -519,14 +690,56 @@ expect(canvas.getByLabelText('Name')).toHaveFocus();
 
 ---
 
+## 🏗️ Feature-Sliced Design パターン
+
+### **層の責務と使い分け**
+
+```
+src/
+├── shared/     # 再利用可能な要素（最下層）
+│   ├── ui/     # Chakra UIラッパー
+│   └── theme/  # セマンティックトークン
+├── entities/   # ビジネスエンティティ
+├── features/   # ユーザー機能
+├── widgets/    # 複合UIブロック
+└── pages/      # ページ組み立て（最上層）
+```
+
+### **インポートルール**
+
+```typescript
+// ✅ 正しい: 下位層のみをインポート
+// features/contact/ui/ContactForm.tsx
+import { Button } from '@/shared/ui/Button';
+import { Field } from '@/shared/ui/field';
+
+// ❌ 間違い: 上位層をインポート
+// shared/ui/Button/Button.tsx
+import { ContactForm } from '@/features/contact';  // 逆方向の依存
+```
+
+### **コンポーネント配置の判断基準**
+
+| 条件 | 配置先 |
+|------|--------|
+| 汎用UIコンポーネント | shared/ui |
+| ドメイン固有の表示 | entities/[entity]/ui |
+| ユーザーアクション | features/[feature]/ui |
+| 複数feature統合 | widgets/[widget]/ui |
+| ページ全体 | pages/[page] |
+
+---
+
 ## 🔗 有用なリンク集
 
 ### **公式ドキュメント**
+- [Chakra UI v3 公式ドキュメント](https://www.chakra-ui.com/)
 - [Storybook 公式ドキュメント](https://storybook.js.org/docs/react/get-started/introduction)
 - [React Hook Form 公式ドキュメント](https://react-hook-form.com/)
 - [Zod 公式ドキュメント](https://zod.dev/)
 - [Vitest 公式ドキュメント](https://vitest.dev/)
 - [Testing Library 公式ドキュメント](https://testing-library.com/)
+- [Feature-Sliced Design](https://feature-sliced.design/)
 
 ### **チュートリアル・ガイド**
 - [Storybook Tutorial](https://storybook.js.org/tutorials/intro-to-storybook/react/en/get-started/)

@@ -1,6 +1,11 @@
 import React from 'react';
+import { Provider } from './providers';
 import { App } from './App';
 
 export const Root: React.FC = () => {
-  return <App />;
+  return (
+    <Provider>
+      <App />
+    </Provider>
+  );
 };
