@@ -72,9 +72,6 @@ src/components/ContactForm/
 # ユニットテスト（watch mode）
 npm run test
 
-# ユニットテスト（UI mode）
-npm run test:ui
-
 # カバレッジ付きテスト
 npm run test:coverage
 
@@ -89,14 +86,14 @@ npm run test:storybook
 
 ```bash
 # 全テストの実行
-npm run test:all
+npm run test
 ```
 
 ## テスト記述ガイドライン
 
 ### 1. ユーザーストーリーとの対応を明確にする
 
-各ストーリーのメタデータには対応するユーザーストーリーIDを記載:
+各ストーリーのメタデータには対応するユーザーストーリーIDを記載する。
 
 ```typescript
 export const HappyPath: Story = {
@@ -129,7 +126,7 @@ expect(await canvas.findByText('お問い合わせを受け付けました')).to
 
 ### 4. テストデータの管理
 
-ユーザーストーリーファイル（`userStories.ts`）を参照してテストデータを統一:
+ユーザーストーリーファイル（`userStories.ts`）を参照してテストデータを統一します。
 
 ```typescript
 import { contactFormStories } from '../../user-stories/userStories';
@@ -145,43 +142,11 @@ const SC001_1 = US001.scenarios.find(s => s.id === 'SC-001-1')!;
 | Unit Tests | 90%以上 | ビジネスロジック、バリデーション |
 | Component Tests | 100% | ユーザーストーリーのシナリオ |
 
-## トラブルシューティング
 
-### よくある問題と解決方法
-
-1. **Storybookでのテストが失敗する**
-   - ブラウザの自動化が正常に動作しているか確認
-   - `@storybook/test`が正しくインストールされているか確認
-
-2. **ローカルストレージのテストが不安定**
-   - `beforeEach`でストレージをクリアする
-   - `vi.clearAllMocks()`でモックをリセットする
-
-3. **非同期処理のテストでタイムアウトが発生**
-   - `waitFor`を適切に使用する
-   - 必要に応じてタイムアウト値を調整する
-
-## 今後の拡張計画
-
-1. **Visual Regression Testing**
-   - Chromatic連携
-   - UIの意図しない変更の検出
-
-2. **Accessibility Testing**
-   - `@storybook/addon-a11y`の活用
-   - アクセシビリティ要件のテスト自動化
-
-3. **Performance Testing**
-   - レンダリング時間の測定
-   - フォーム操作の応答性テスト
-
-4. **Cross-browser Testing**
-   - 複数ブラウザでの動作確認
-   - モバイル端末対応のテスト
 
 ## まとめ
 
-このテスト戦略により、以下を実現します：
+このテスト戦略により、以下を実現します。
 
 - **プロダクトオーナーが定義したユーザーストーリーの確実な実装**
 - **回帰テストによる品質保証**
