@@ -171,9 +171,3 @@ npm run build-storybook   # Storybookビルド
 - テスタブルなコード設計
 
 ---
-
-## サポート
-
-ワークショップ中に困ったことがあれば、お気軽にメンターに質問してください。
-
-Happy Testing!
