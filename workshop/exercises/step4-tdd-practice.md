@@ -304,11 +304,41 @@ export const TodoItem = ({
 
 Play Functionが通ったので、コードを改善しましょう。
 
+
+
 ### 改善課題
 1. キーボード操作対応（Enter/Escape）
 2. 空文字入力の防止
 3. アクセシビリティの向上
 4. エラーハンドリング
+
+### リファクタリングの検証用Play Function
+
+```typescript
+export const UserUsesKeyboardShortcuts: Story = {
+  name: 'US-3-SC-4: ユーザーがキーボードショートカットを使う',
+  args: {
+    task: '買い物に行く',
+    initialCompleted: false,
+    onEdit: (newTask: string) => console.log('Task edited with keyboard:', newTask)
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    
+    // Given: 編集モードに入る
+    const editButton = canvas.getByRole('button', { name: '買い物に行くを編集' })
+    await userEvent.click(editButton)
+    
+    // When: タスク名を変更してEnterキーを押す
+    const input = canvas.getByDisplayValue('買い物に行く')
+    await userEvent.clear(input)
+    await userEvent.type(input, 'スーパーで買い物{enter}')
+    
+    // Then: 編集が保存される
+    await expect(canvas.getByText('スーパーで買い物')).toBeInTheDocument()
+  }
+}
+```
 
 ### リファクタリング実装
 
@@ -346,35 +376,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
 />
 ```
 
-### リファクタリングの検証用Play Function
-
-```typescript
-export const UserUsesKeyboardShortcuts: Story = {
-  name: 'US-3-SC-4: ユーザーがキーボードショートカットを使う',
-  args: {
-    task: '買い物に行く',
-    initialCompleted: false,
-    onEdit: (newTask: string) => console.log('Task edited with keyboard:', newTask)
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    
-    // Given: 編集モードに入る
-    const editButton = canvas.getByRole('button', { name: '買い物に行くを編集' })
-    await userEvent.click(editButton)
-    
-    // When: タスク名を変更してEnterキーを押す
-    const input = canvas.getByDisplayValue('買い物に行く')
-    await userEvent.clear(input)
-    await userEvent.type(input, 'スーパーで買い物{enter}')
-    
-    // Then: 編集が保存される
-    await expect(canvas.getByText('スーパーで買い物')).toBeInTheDocument()
-  }
-}
-```
-
-これで🔵**REFACTOR**フェーズ完了！
+これで🔵**REFACTOR**フェーズを体験しました！
 
 ---
 
