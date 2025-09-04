@@ -1,24 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { userEvent, within, expect } from 'storybook/test'
 import { TodoItem } from './TodoItem'
-import { useState } from 'react'
-
-// 状態管理を持つラッパーコンポーネント
-const TodoItemWithState = ({ task, initialCompleted = false }: { task: string; initialCompleted?: boolean }) => {
-  const [completed, setCompleted] = useState(initialCompleted)
-  
-  return (
-    <TodoItem
-      task={task}
-      completed={completed}
-      onToggle={(newCompleted) => {
-        console.log('onToggle:', newCompleted)
-        setCompleted(newCompleted)
-      }}
-      onDelete={() => console.log('onDelete called')}
-    />
-  )
-}
 
 const meta: Meta<typeof TodoItem> = {
   title: 'Components/TodoItem',
@@ -43,28 +25,31 @@ type Story = StoryObj<typeof meta>
 export const Default: Story = {
   args: {
     task: '買い物に行く',
-    completed: false,
+    initialCompleted: false,
   },
 }
 
 export const Completed: Story = {
   args: {
     task: '宿題をする',
-    completed: true,
+    initialCompleted: true,
   },
 }
 
 export const LongTask: Story = {
   args: {
     task: '友達と一緒に映画を見に行って、その後カフェでゆっくり話をする',
-    completed: false,
+    initialCompleted: false,
   },
 }
 
 // ユーザーシナリオテスト（Play Function）
 export const UserTogglesTodo: Story = {
   name: 'US-1-SC-1: ユーザーがタスクの完了状態を切り替える',
-  render: () => <TodoItemWithState task="買い物に行く" initialCompleted={false} />,
+  args: {
+    task: '買い物に行く',
+    initialCompleted: false,
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
@@ -75,14 +60,17 @@ export const UserTogglesTodo: Story = {
     // When: チェックボックスをクリックする
     await userEvent.click(checkbox)
     
-    // Then: チェックボックスがチェックされる
+    // Then: チェックボックスがチェックされる（実際に動作する！）
     await expect(checkbox).toBeChecked()
   },
 }
 
 export const UserUnchecksCompletedTodo: Story = {
   name: 'US-1-SC-2: ユーザーが完了したタスクを未完了に戻す',
-  render: () => <TodoItemWithState task="洗濯物を干す" initialCompleted={true} />,
+  args: {
+    task: '洗濯物を干す',
+    initialCompleted: true,
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
@@ -98,11 +86,38 @@ export const UserUnchecksCompletedTodo: Story = {
   },
 }
 
+export const UserTogglesTodoTwice: Story = {
+  name: 'US-1-SC-3: ユーザーがタスクを2回切り替える',
+  args: {
+    task: '重要な会議の準備',
+    initialCompleted: false,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    
+    // Given: 未完了のタスクがある
+    const checkbox = canvas.getByRole('checkbox')
+    await expect(checkbox).not.toBeChecked()
+    
+    // When: チェックボックスをクリック（完了にする）
+    await userEvent.click(checkbox)
+    
+    // Then: 完了状態になる
+    await expect(checkbox).toBeChecked()
+    
+    // When: もう一度クリック（未完了に戻す）  
+    await userEvent.click(checkbox)
+    
+    // Then: 未完了状態に戻る
+    await expect(checkbox).not.toBeChecked()
+  },
+}
+
 export const UserDeletesTodo: Story = {
   name: 'US-2-SC-1: ユーザーがタスクを削除する',
   args: {
     task: 'ゴミ出し',
-    completed: false,
+    initialCompleted: false,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -114,8 +129,7 @@ export const UserDeletesTodo: Story = {
     const deleteButton = canvas.getByRole('button', { name: 'ゴミ出しを削除' })
     await userEvent.click(deleteButton)
     
-    // Then: 削除処理が実行される（この例ではコンソールログのみ）
-    // 実際のアプリでは、このタスクがリストから消える
+    // Then: 削除処理が実行される（コンソールログで確認）
   },
 }
 
@@ -123,7 +137,7 @@ export const UserDeletesTodo: Story = {
 export const EmptyTask: Story = {
   args: {
     task: '',
-    completed: false,
+    initialCompleted: false,
   },
 }
 
@@ -132,7 +146,7 @@ export const AccessibilityTest: Story = {
   name: 'アクセシビリティ確認',
   args: {
     task: 'キーボードでアクセス可能',
-    completed: false,
+    initialCompleted: false,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -157,7 +171,7 @@ export const AccessibilityTest: Story = {
 export const UrgentTask: Story = {
   args: {
     task: '【緊急】重要な会議の資料準備',
-    completed: false,
+    initialCompleted: false,
     onToggle: (completed: boolean) => {
       console.log('Urgent task toggled:', completed)
     },
@@ -170,45 +184,12 @@ export const UrgentTask: Story = {
 export const VeryLongTask: Story = {
   args: {
     task: 'これは非常に長いタスクの例で、UIが長いテキストに対してどのように表示されるかを確認するためのものです。レイアウトが崩れないか、適切に改行されるかなどをチェックできます。',
-    completed: false,
+    initialCompleted: false,
     onToggle: (completed: boolean) => {
       console.log('Long task toggled:', completed)
     },
     onDelete: () => {
       console.log('Long task deleted')
     },
-  },
-}
-
-export const UserTogglesTodoTwice: Story = {
-  name: 'US-1-SC-2: ユーザーがタスクを完了→未完了と切り替える',
-  args: {
-    task: '重要な会議の準備',
-    completed: false,
-    onToggle: (completed: boolean) => {
-      console.log('Task toggled to:', completed)
-    },
-    onDelete: () => {
-      console.log('Task deleted')
-    },
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    
-    // Given: 未完了のタスクがある
-    const checkbox = canvas.getByRole('checkbox')
-    await expect(checkbox).not.toBeChecked()
-    
-    // When: チェックボックスをクリック（完了にする）
-    await userEvent.click(checkbox)
-    
-    // // Then: 完了状態になる
-     await expect(checkbox).toBeChecked()
-    
-    // // When: もう一度クリック（未完了に戻す）  
-    // await userEvent.click(checkbox)
-    
-    // // Then: 未完了状態に戻る
-    // await expect(checkbox).not.toBeChecked()
   },
 }

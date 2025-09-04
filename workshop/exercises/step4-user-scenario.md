@@ -40,43 +40,17 @@ export const UserScenario: Story = {
 
 ## 課題 4-2: TodoItemのユーザーシナリオ
 
-`src/components/TodoItem/TodoItem.stories.tsx` を確認すると、すでに動作するPlay Functionが実装されています！
+TodoItemが**非制御コンポーネント**になったので、Play Functionがとてもシンプルになりました！
 
-### 実装されている動作するシナリオ
-
-#### 1. 状態を持つラッパーコンポーネント（重要！）
-
-TodoItemは制御されたコンポーネントなので、実際のアプリケーションのような動作をテストするため、**状態を持つラッパーコンポーネント**が実装されています：
+### シンプルなチェックボックステスト
 
 ```typescript
-// すでに実装されている
-const TodoItemWithState = ({ task, initialCompleted = false }: { 
-  task: string; 
-  initialCompleted?: boolean 
-}) => {
-  const [completed, setCompleted] = useState(initialCompleted)
-  
-  return (
-    <TodoItem
-      task={task}
-      completed={completed}
-      onToggle={(newCompleted) => {
-        console.log('onToggle:', newCompleted)
-        setCompleted(newCompleted) // 実際に状態を更新！
-      }}
-      onDelete={() => console.log('onDelete called')}
-    />
-  )
-}
-```
-
-#### 2. 動作するPlay Function例
-
-```typescript
-// すでに実装されている - 動作します！
 export const UserTogglesTodo: Story = {
   name: 'US-1-SC-1: ユーザーがタスクの完了状態を切り替える',
-  render: () => <TodoItemWithState task="買い物に行く" initialCompleted={false} />,
+  args: {
+    task: '買い物に行く',
+    initialCompleted: false,
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
@@ -87,19 +61,21 @@ export const UserTogglesTodo: Story = {
     // When: チェックボックスをクリックする
     await userEvent.click(checkbox)
     
-    // Then: チェックボックスがチェックされる（実際に動作する！）
+    // Then: チェックボックスがチェックされる（実際に動作！）
     await expect(checkbox).toBeChecked()
   },
 }
 ```
 
-#### 3. 逆方向のテスト
+### 逆方向のテスト
 
 ```typescript
-// すでに実装されている - これも動作します！
 export const UserUnchecksCompletedTodo: Story = {
   name: 'US-1-SC-2: ユーザーが完了したタスクを未完了に戻す',
-  render: () => <TodoItemWithState task="洗濯物を干す" initialCompleted={true} />,
+  args: {
+    task: '洗濯物を干す',
+    initialCompleted: true,  // 初期状態が完了
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
@@ -110,34 +86,35 @@ export const UserUnchecksCompletedTodo: Story = {
     // When: チェックボックスをクリックする
     await userEvent.click(checkbox)
     
-    // Then: チェックボックスのチェックが外れる（実際に動作する！）
+    // Then: チェックボックスのチェックが外れる
     await expect(checkbox).not.toBeChecked()
   },
 }
 ```
 
-### 課題: 自分でも作ってみよう
-
-上記の動作パターンを参考に、以下のシナリオを追加してみましょう：
+### 課題: 2回切り替えるテストを追加
 
 ```typescript
 export const UserTogglesTodoTwice: Story = {
-  name: 'ユーザーがタスクを2回切り替える',
-  render: () => <TodoItemWithState task="課題をやる" initialCompleted={false} />,
+  name: 'US-1-SC-3: ユーザーがタスクを2回切り替える',
+  args: {
+    task: '重要な会議の準備',
+    initialCompleted: false,
+  },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
-    const checkbox = canvas.getByRole('checkbox')
     
-    // Given: 未完了状態
+    // Given: 未完了のタスクがある
+    const checkbox = canvas.getByRole('checkbox')
     await expect(checkbox).not.toBeChecked()
     
-    // When: 1回目のクリック（完了にする）
+    // When: チェックボックスをクリック（完了にする）
     await userEvent.click(checkbox)
     
     // Then: 完了状態になる
     await expect(checkbox).toBeChecked()
     
-    // When: 2回目のクリック（未完了に戻す）
+    // When: もう一度クリック（未完了に戻す）
     await userEvent.click(checkbox)
     
     // Then: 未完了状態に戻る
@@ -149,12 +126,11 @@ export const UserTogglesTodoTwice: Story = {
 ### 削除ボタンのテスト
 
 ```typescript
-// すでに実装されている
 export const UserDeletesTodo: Story = {
   name: 'US-2-SC-1: ユーザーがタスクを削除する',
   args: {
     task: 'ゴミ出し',
-    completed: false,
+    initialCompleted: false,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -172,15 +148,12 @@ export const UserDeletesTodo: Story = {
 
 ### アクセシビリティテスト
 
-実装済みのアクセシビリティテストも参考になります：
-
 ```typescript
-// すでに実装されている
 export const AccessibilityTest: Story = {
   name: 'アクセシビリティ確認',
   args: {
     task: 'キーボードでアクセス可能',
-    completed: false,
+    initialCompleted: false,
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
@@ -203,11 +176,11 @@ export const AccessibilityTest: Story = {
 }
 ```
 
-### 重要なポイント
+### ポイント
 
-1. **render propを使用**: `render: () => <TodoItemWithState ... />` でラッパーコンポーネントを使用
-2. **実際の状態変更**: ラッパーコンポーネント内でuseStateを使用して実際にstateが変更される
-3. **現実的なテスト**: 実際のアプリケーションと同じ動作をテストできる
+1. **シンプルな構造**: argsにinitialCompletedを設定するだけ
+2. **自然な動作**: クリックしたら実際にチェック状態が変わる
+3. **初心者に優しい**: ラッパーコンポーネントやrender propが不要
 
 ---
 
@@ -326,7 +299,7 @@ export const LongTaskDisplayCheck: Story = {
   name: 'エッジケース: 長いタスク名の表示確認',
   args: {
     task: 'これは非常に長いタスク名の例です。UIが適切に長いテキストを処理し、レイアウトが崩れることなく、ユーザーにとって読みやすい形で表示されることを確認するためのテストケースです。',
-    completed: false,
+    initialCompleted: false,
     onToggle: (completed: boolean) => console.log('toggled:', completed),
     onDelete: () => console.log('deleted'),
   },
