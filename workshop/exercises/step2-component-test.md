@@ -42,7 +42,7 @@ test('完了したタスクにはcompletedクラスが適用される', () => {
   render(
     <TodoItem
       task="完了したタスク"
-      completed={true}
+      initialCompleted={true}
       onToggle={mockOnToggle}
       onDelete={mockOnDelete}
     />

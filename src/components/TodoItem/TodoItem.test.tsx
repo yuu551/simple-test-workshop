@@ -105,39 +105,4 @@ describe('TodoItem', () => {
     const deleteButton = screen.getByRole('button', { name: '料理を作るを削除' })
     expect(deleteButton).toBeInTheDocument()
   })
-
-  test('完了状態のタスクにはcompletedクラスが適用される', () => {
-    render(
-      <TodoItem
-        task="完了したタスク"
-        initialCompleted={true}
-      />
-    )
-  
-    const todoItem = document.querySelector('.todo-item')
-    expect(todoItem).toHaveClass('todo-item--completed')
-  })
-
-  test('状態が切り替わるとクラスも切り替わる', () => {
-    render(
-      <TodoItem
-        task="動的なタスク"
-        initialCompleted={false}
-      />
-    )
-  
-    const todoItem = document.querySelector('.todo-item')
-    const checkbox = screen.getByRole('checkbox')
-    
-    // 初期状態では completedクラスなし
-    expect(todoItem).not.toHaveClass('todo-item--completed')
-    
-    // クリックして完了状態に
-    fireEvent.click(checkbox)
-    expect(todoItem).toHaveClass('todo-item--completed')
-    
-    // もう一度クリックして未完了状態に
-    fireEvent.click(checkbox)
-    expect(todoItem).not.toHaveClass('todo-item--completed')
-  })
 })

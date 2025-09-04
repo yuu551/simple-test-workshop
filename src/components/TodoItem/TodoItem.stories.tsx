@@ -153,7 +153,7 @@ export const AccessibilityTest: Story = {
     
     // フォーカス移動のテスト
     const checkbox = canvas.getByRole('checkbox')
-    const deleteButton = canvas.getByRole('button')
+    const deleteButton = canvas.getByRole('button', { name: 'キーボードでアクセス可能を削除' })
     
     // チェックボックスにフォーカス
     checkbox.focus()
@@ -168,28 +168,43 @@ export const AccessibilityTest: Story = {
   },
 }
 
-export const UrgentTask: Story = {
+export const LongTaskDisplayCheck: Story = {
+  name: 'エッジケース: 長いタスク名の表示確認',
   args: {
-    task: '【緊急】重要な会議の資料準備',
+    task: 'これは非常に長いタスク名の例です。UIが適切に長いテキストを処理し、レイアウトが崩れることなく、ユーザーにとって読みやすい形で表示されることを確認するためのテストケースです。',
     initialCompleted: false,
-    onToggle: (completed: boolean) => {
-      console.log('Urgent task toggled:', completed)
-    },
-    onDelete: () => {
-      console.log('Urgent task deleted')
-    },
+    onToggle: (completed: boolean) => console.log('toggled:', completed),
+    onDelete: () => console.log('deleted'),
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    
+    // 長いテキストが表示されていることを確認
+    const taskText = canvas.getByText(/これは非常に長いタスク名の例です/)
+    await expect(taskText).toBeInTheDocument()
+    
+    // チェックボックスとボタンが操作可能であることを確認
+    const checkbox = canvas.getByRole('checkbox')
+    const deleteButton = canvas.getByRole('button', { name: /を削除$/ })
+    
+    await expect(checkbox).toBeEnabled()
+    await expect(deleteButton).toBeEnabled()
+    
+    // 実際に操作してみる
+    await userEvent.click(checkbox)
+    await expect(checkbox).toBeChecked()
   },
 }
 
-export const VeryLongTask: Story = {
-  args: {
-    task: 'これは非常に長いタスクの例で、UIが長いテキストに対してどのように表示されるかを確認するためのものです。レイアウトが崩れないか、適切に改行されるかなどをチェックできます。',
-    initialCompleted: false,
-    onToggle: (completed: boolean) => {
-      console.log('Long task toggled:', completed)
-    },
-    onDelete: () => {
-      console.log('Long task deleted')
-    },
-  },
-}
+// 以下はワークショップで参加者が実装する課題です
+// export const UserEditsTaskName: Story = {
+//   // TODO: Step 5 TDD workshop で実装
+// }
+
+// export const UserSavesEditedTask: Story = {
+//   // TODO: Step 5 TDD workshop で実装
+// }
+
+// export const UserCancelsEdit: Story = {
+//   // TODO: Step 5 TDD workshop で実装
+// }

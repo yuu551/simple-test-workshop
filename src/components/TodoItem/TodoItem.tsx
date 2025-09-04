@@ -1,5 +1,5 @@
-import { useState } from 'react'
 import './TodoItem.css'
+import { useState } from 'react'
 
 interface TodoItemProps {
   task: string
@@ -8,9 +8,14 @@ interface TodoItemProps {
   onDelete?: () => void
 }
 
-export const TodoItem = ({ task, initialCompleted = false, onToggle, onDelete }: TodoItemProps) => {
+export const TodoItem = ({ 
+  task, 
+  initialCompleted = false, 
+  onToggle, 
+  onDelete 
+}: TodoItemProps) => {
   const [completed, setCompleted] = useState(initialCompleted)
-  
+
   const handleToggle = () => {
     const newCompleted = !completed
     setCompleted(newCompleted)

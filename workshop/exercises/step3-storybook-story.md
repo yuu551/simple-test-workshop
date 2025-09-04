@@ -50,7 +50,7 @@ export const Default: Story = {
 export const UrgentTask: Story = {
   args: {
     task: '【緊急】重要な会議の資料準備',
-    completed: false,
+    initialCompleted: false,
     onToggle: (completed: boolean) => {
       console.log('Urgent task toggled:', completed)
     },
@@ -66,7 +66,7 @@ export const UrgentTask: Story = {
 export const VeryLongTask: Story = {
   args: {
     task: 'これは非常に長いタスクの例で、UIが長いテキストに対してどのように表示されるかを確認するためのものです。レイアウトが崩れないか、適切に改行されるかなどをチェックできます。',
-    completed: false,
+    initialCompleted: false,
     onToggle: (completed: boolean) => {
       console.log('Long task toggled:', completed)
     },
@@ -200,7 +200,7 @@ const meta: Meta<typeof TodoItem> = {
   component: TodoItem,
   argTypes: {
     task: { control: 'text' },
-    completed: { control: 'boolean' },
+    initialCompleted: { control: 'boolean' },
     onToggle: { action: 'toggled' },
     onDelete: { action: 'deleted' },
   },

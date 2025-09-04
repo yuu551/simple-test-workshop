@@ -142,7 +142,6 @@ export const UserDeletesTodo: Story = {
     const deleteButton = canvas.getByRole('button', { name: 'ゴミ出しを削除' })
     await userEvent.click(deleteButton)
     
-    // Then: 削除処理が実行される（コンソールログで確認）
   },
 }
 
