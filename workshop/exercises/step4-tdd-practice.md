@@ -1,4 +1,4 @@
-# Step 5: Play Function TDD - ユーザーシナリオから始める開発
+# Step 4: Play Function TDD - ユーザーシナリオから始める開発
 
 ## このステップの目標
 

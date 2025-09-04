@@ -1,4 +1,4 @@
-# Step 3: Storybookストーリーを作ろう
+# Step 2: Storybookストーリーを作ろう
 
 ## 目標
 Storybookでコンポーネントの様々な状態を可視化する方法を学ぶ
@@ -287,7 +287,7 @@ export const SpecialCharacters: Story = { args: { task: '特殊文字を含む�
 - レスポンシブデザインの確認方法
 
 ### 次のステップ
-Step 4では、Play Functionを使った自動化されたユーザーシナリオテストについて学びます。
+Step 3では、Play Functionを使った自動化されたユーザーシナリオテストについて学びます。
 
 ### 確認事項
 - [ ] TodoItemの新しいストーリーが表示される

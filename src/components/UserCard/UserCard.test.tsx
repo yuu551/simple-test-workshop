@@ -153,3 +153,4 @@ describe('UserCard', () => {
     expect(screen.getByTestId('online-indicator')).toBeInTheDocument()
   })
 })
+

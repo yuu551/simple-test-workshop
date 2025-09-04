@@ -1,4 +1,4 @@
-# Step 4: ユーザーシナリオテストを自動化しよう
+# Step 3: ユーザーシナリオテストを自動化しよう
 
 ## 目標  
 Play Functionを使って、ユーザーの操作シナリオを自動化する
@@ -6,7 +6,7 @@ Play Functionを使って、ユーザーの操作シナリオを自動化する
 
 ---
 
-## 課題 4-1: Play Functionの基本を理解する
+## 課題 3-1: Play Functionの基本を理解する
 
 ### Play Functionとは？
 Storybook上でユーザーの操作を自動的に実行し、結果を検証する機能です。
@@ -38,9 +38,8 @@ export const UserScenario: Story = {
 
 ---
 
-## 課題 4-2: TodoItemのユーザーシナリオ
+## 課題 3-2: TodoItemのユーザーシナリオ
 
-TodoItemが**非制御コンポーネント**になったので、Play Functionがとてもシンプルになりました！
 
 ### シンプルなチェックボックステスト
 
@@ -183,7 +182,7 @@ export const AccessibilityTest: Story = {
 
 ---
 
-## 課題 4-3: Counterの連続操作シナリオ
+## 課題 3-3: Counterの連続操作シナリオ
 
 `src/components/Counter/Counter.stories.tsx` に以下を追加：
 
@@ -256,7 +255,7 @@ export const UserHitsMaximumLimit: Story = {
 
 ---
 
-## 課題 4-4: UserCardの情報表示確認シナリオ
+## 課題 3-4: UserCardの情報表示確認シナリオ
 
 `src/components/UserCard/UserCard.stories.tsx` に以下を追加：
 
@@ -288,7 +287,7 @@ export const DisplayCompleteProfile: Story = {
 
 ---
 
-## 課題 4-5: 複雑なユーザーシナリオ
+## 課題 3-5: 複雑なユーザーシナリオ
 
 ### 課題: エラーケースのシナリオ
 長いタスク名での表示確認：
