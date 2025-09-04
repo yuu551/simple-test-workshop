@@ -3,6 +3,10 @@
 ## 目標  
 Play Functionを使って、ユーザーの操作シナリオを自動化する
 
+### このステップの進め方（追加要否の早見表）
+- **3-2 TodoItem**: 確認のみ（追記不要）
+- **3-3 Counter**: 追記が必要（新しいシナリオを追加）
+- **3-4 UserCard**: 追記が必要（新しいシナリオを追加）
 
 ---
 
@@ -38,8 +42,13 @@ export const UserScenario: Story = {
 
 ---
 
-## 課題 3-2: TodoItemのユーザーシナリオ
+## 3-2: TodoItemのユーザーシナリオ
 
+> 注記: この課題は既に実装済みです。以下のシナリオは `src/components/TodoItem/TodoItem.stories.tsx` に用意されています。Storybook上で再生して「確認」のみ行ってください（追記不要）。
+> - `UserTogglesTodo`
+> - `UserUnchecksCompletedTodo`
+> - `UserTogglesTodoTwice`
+> - `UserDeletesTodo`
 
 ### シンプルなチェックボックステスト
 
@@ -91,7 +100,7 @@ export const UserUnchecksCompletedTodo: Story = {
 }
 ```
 
-### 課題: 2回切り替えるテストを追加
+### 2回切り替えるテスト
 
 ```typescript
 export const UserTogglesTodoTwice: Story = {
@@ -143,35 +152,6 @@ export const UserDeletesTodo: Story = {
     
   },
 }
-
-### アクセシビリティテスト
-
-```typescript
-export const AccessibilityTest: Story = {
-  name: 'アクセシビリティ確認',
-  args: {
-    task: 'キーボードでアクセス可能',
-    initialCompleted: false,
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    
-    // フォーカス移動のテスト
-    const checkbox = canvas.getByRole('checkbox')
-    const deleteButton = canvas.getByRole('button')
-    
-    // チェックボックスにフォーカス
-    checkbox.focus()
-    await expect(checkbox).toHaveFocus()
-    
-    // Tabで削除ボタンに移動
-    await userEvent.tab()
-    await expect(deleteButton).toHaveFocus()
-    
-    // 削除ボタンに適切なaria-labelがあることを確認
-    await expect(deleteButton).toHaveAttribute('aria-label', 'キーボードでアクセス可能を削除')
-  },
-}
 ```
 
 ### ポイント
@@ -184,7 +164,9 @@ export const AccessibilityTest: Story = {
 
 ## 課題 3-3: Counterの連続操作シナリオ
 
-`src/components/Counter/Counter.stories.tsx` に以下を追加：
+> 注記: この課題は未実装のため「追記が必要」です。`src/components/Counter/Counter.stories.tsx` に本シナリオ（`UserIncrementsAndResets`）を追加してください。類似のシナリオ（`UserIncrementsCounter`, `UserResetsCounter` など）はありますが、指定の「5回インクリメント→リセット」をまとめて検証するストーリーは未追加です。
+
+`src/components/Counter/Counter.stories.tsx` に以下を追加します。
 
 ### 課題: 5回インクリメント→リセットのシナリオ
 ```typescript
@@ -223,41 +205,13 @@ export const UserIncrementsAndResets: Story = {
 }
 ```
 
-### 課題: 最大値到達シナリオ
-```typescript
-export const UserHitsMaximumLimit: Story = {
-  name: 'US-3-SC-2: ユーザーが最大値に達してボタンが無効化される',
-  args: {
-    initialValue: 8,
-    min: 0,
-    max: 10,
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    
-    const counterValue = canvas.getByTestId('counter-value')
-    const incrementButton = canvas.getByLabelText('カウントを1増やす')
-    
-    // Given: カウンターが8
-    await expect(counterValue).toHaveTextContent('8')
-    await expect(incrementButton).not.toBeDisabled()
-    
-    // When: 2回インクリメント（最大値10に到達）
-    await userEvent.click(incrementButton) // 9
-    await userEvent.click(incrementButton) // 10
-    
-    // Then: 最大値に達し、ボタンが無効化される
-    await expect(counterValue).toHaveTextContent('10')
-    await expect(incrementButton).toBeDisabled()
-  },
-}
-```
-
 ---
 
 ## 課題 3-4: UserCardの情報表示確認シナリオ
 
-`src/components/UserCard/UserCard.stories.tsx` に以下を追加：
+> 注記: この課題は未実装のため「追記が必要」です。`src/components/UserCard/UserCard.stories.tsx` に本シナリオ（`DisplayCompleteProfile`）を追加してください。分割された確認用シナリオ（`DisplayUserInformation`, `DisplayOnlineStatus`, `DisplayCustomAvatar` など）はありますが、要求どおり「完全なプロフィール情報を一括で確認する」ストーリーは未追加です。
+
+`src/components/UserCard/UserCard.stories.tsx` に以下を追加します。
 
 ### 課題: 完全なプロフィール情報の確認
 ```typescript
@@ -281,43 +235,6 @@ export const DisplayCompleteProfile: Story = {
     await expect(canvas.getByTestId('user-role')).toHaveTextContent('シニアエンジニア')
     await expect(canvas.getByAltText('テスト太郎のアバター')).toBeInTheDocument()
     await expect(canvas.getByTestId('online-indicator')).toBeInTheDocument()
-  },
-}
-```
-
----
-
-## 課題 3-5: 複雑なユーザーシナリオ
-
-### 課題: エラーケースのシナリオ
-長いタスク名での表示確認：
-
-```typescript
-export const LongTaskDisplayCheck: Story = {
-  name: 'エッジケース: 長いタスク名の表示確認',
-  args: {
-    task: 'これは非常に長いタスク名の例です。UIが適切に長いテキストを処理し、レイアウトが崩れることなく、ユーザーにとって読みやすい形で表示されることを確認するためのテストケースです。',
-    initialCompleted: false,
-    onToggle: (completed: boolean) => console.log('toggled:', completed),
-    onDelete: () => console.log('deleted'),
-  },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement)
-    
-    // 長いテキストが表示されていることを確認
-    const taskText = canvas.getByText(/これは非常に長いタスク名の例です/)
-    await expect(taskText).toBeInTheDocument()
-    
-    // チェックボックスとボタンが操作可能であることを確認
-    const checkbox = canvas.getByRole('checkbox')
-    const deleteButton = canvas.getByRole('button')
-    
-    await expect(checkbox).toBeEnabled()
-    await expect(deleteButton).toBeEnabled()
-    
-    // 実際に操作してみる
-    await userEvent.click(checkbox)
-    await expect(checkbox).toBeChecked()
   },
 }
 ```
@@ -414,6 +331,4 @@ npm run test:storybook
 このステップで学んだこと
 - Play Functionの基本的な使い方
 - ユーザーシナリオの自動化方法
-- 複雑な操作フローのテスト
-- エラーケースやエッジケースの確認
-- デバッグとベストプラクティス
+- デバッグ

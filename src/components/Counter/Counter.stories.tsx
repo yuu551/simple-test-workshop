@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { userEvent, within, expect } from 'storybook/test'
 import { Counter } from './Counter'
+import './Counter.css'
 
 const meta: Meta<typeof Counter> = {
   title: 'Components/Counter',
@@ -195,21 +196,5 @@ export const RapidClicking: Story = {
     await userEvent.click(decrementButton)
     await userEvent.click(decrementButton)
     await expect(counterValue).toHaveTextContent('-3')
-  },
-}
-
-export const StrictLimits: Story = {
-  args: {
-    initialValue: 0,
-    min: -2,
-    max: 2,
-  },
-}
-
-export const AlreadyAtMaximum: Story = {
-  args: {
-    initialValue: 10,
-    min: -10,
-    max: 10,
   },
 }

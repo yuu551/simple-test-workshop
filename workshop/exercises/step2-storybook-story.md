@@ -43,7 +43,7 @@ export const Default: Story = {
 
 ## 課題 3-2: TodoItemに新しいストーリーを追加
 
-`src/components/TodoItem/TodoItem.stories.tsx` を開いて、以下のストーリーを追加してみましょう：
+`src/components/TodoItem/TodoItem.stories.tsx` を開いて、以下のストーリーを追加してみましょう。
 
 ### 課題: 緊急タスクのストーリー
 ```typescript
@@ -83,7 +83,7 @@ export const VeryLongTask: Story = {
 
 ## 課題 3-3: Counterに機能的なストーリーを追加
 
-`src/components/Counter/Counter.stories.tsx` に以下のストーリーを追加：
+`src/components/Counter/Counter.stories.tsx` に以下のストーリーを追加します。
 
 ### 課題: 制限の厳しいカウンター
 ```typescript
@@ -113,7 +113,7 @@ export const AlreadyAtMaximum: Story = {
 
 ## 課題 3-4: UserCardのバリエーション
 
-`src/components/UserCard/UserCard.stories.tsx` に以下のストーリーを追加：
+`src/components/UserCard/UserCard.stories.tsx` に以下のストーリーを追加します。
 
 ### 課題: 様々な職業の人々
 ```typescript
@@ -210,20 +210,6 @@ const meta: Meta<typeof TodoItem> = {
 ### 2. Actions（アクション）
 コンポーネントのイベントを「Actions」タブで確認できます。
 
-### 3. Docs（ドキュメント）
-自動生成されるドキュメントページを確認してみましょう。
-
----
-
-## 課題 3-6: レスポンシブデザインの確認
-
-Storybookの viewport 設定で、様々な画面サイズでの表示を確認してみましょう。
-
-### モバイル表示の確認
-1. Storybookのツールバーの viewport アイコンをクリック
-2. iPhone や Android などのプリセットを選択
-3. コンポーネントがモバイルでも正しく表示されるか確認
-
 ---
 
 ## ストーリー作成のベストプラクティス
@@ -250,13 +236,6 @@ export const RealWorldExample: Story = {
     role: 'シニアエンジニア',
   },
 }
-```
-
-### 3. エッジケースも含める
-```typescript
-export const EmptyState: Story = { args: { task: '' } }
-export const VeryLongContent: Story = { args: { task: '非常に長いテキスト...' } }
-export const SpecialCharacters: Story = { args: { task: '特殊文字を含むタスク' } }
 ```
 
 ---

@@ -195,36 +195,3 @@ export const ConditionalRendering: Story = {
     await expect(canvas.queryByTestId('online-indicator')).not.toBeInTheDocument()
   },
 }
-
-export const Developer: Story = {
-  args: {
-    name: '山田太郎',
-    email: 'yamada@example.com',
-    age: 28,
-    role: 'フロントエンド開発者',
-    avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-    isOnline: true,
-  },
-}
-
-export const Designer: Story = {
-  args: {
-    name: '佐藤花子',
-    email: 'sato@example.com',
-    age: 26,
-    role: 'UIデザイナー',
-    avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-    isOnline: false,
-  },
-}
-
-export const Manager: Story = {
-  args: {
-    name: '田中一郎',
-    email: 'tanaka@example.com',
-    age: 35,
-    role: 'プロダクトマネージャー',
-    // avatarUrlを意図的に省略してプレースホルダーを表示
-    isOnline: true,
-  },
-}
