@@ -29,9 +29,9 @@ export const Counter = ({ initialValue = 0, min = -10, max = 10 }: CounterProps)
   return (
     <div className="counter">
       <div className="counter__display">
-        <span className="counter__value" data-testid="counter-value">
+        <output className="counter__value" aria-label="現在のカウント" aria-live="polite">
           {count}
-        </span>
+        </output>
       </div>
 
       <div className="counter__controls">

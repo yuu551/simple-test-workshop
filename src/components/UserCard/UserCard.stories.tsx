@@ -100,10 +100,11 @@ export const DisplayUserInformation: Story = {
     
     // Given: ユーザーカードが表示されている
     // Then: すべての情報が正しく表示される
-    await expect(canvas.getByTestId('user-name')).toHaveTextContent('小林八郎')
-    await expect(canvas.getByTestId('user-email')).toHaveTextContent('kobayashi@example.com')
-    await expect(canvas.getByTestId('user-age')).toHaveTextContent('29歳')
-    await expect(canvas.getByTestId('user-role')).toHaveTextContent('デザイナー')
+    await expect(canvas.getByRole('heading', { name: '小林八郎' })).toBeInTheDocument()
+    await expect(canvas.getByText('kobayashi@example.com')).toBeInTheDocument()
+    await expect(canvas.getByText('年齢:')).toBeInTheDocument()
+    await expect(canvas.getByText('29歳')).toBeInTheDocument()
+    await expect(canvas.getByText('デザイナー')).toBeInTheDocument()
   },
 }
 
@@ -119,7 +120,7 @@ export const DisplayOnlineStatus: Story = {
     
     // Given: オンラインユーザーのカードが表示されている
     // Then: オンラインインジケーターが表示される
-    await expect(canvas.getByTestId('online-indicator')).toBeInTheDocument()
+    await expect(canvas.getByRole('status', { name: 'オンライン' })).toBeInTheDocument()
   },
 }
 
@@ -135,7 +136,7 @@ export const DisplayOfflineStatus: Story = {
     
     // Given: オフラインユーザーのカードが表示されている
     // Then: オンラインインジケーターが表示されない
-    await expect(canvas.queryByTestId('online-indicator')).not.toBeInTheDocument()
+    await expect(canvas.queryByRole('status', { name: 'オンライン' })).not.toBeInTheDocument()
   },
 }
 
@@ -150,7 +151,7 @@ export const DisplayAvatarPlaceholder: Story = {
     
     // Given: アバター画像のないユーザーカードが表示されている
     // Then: 名前の頭文字がプレースホルダーとして表示される
-    await expect(canvas.getByTestId('avatar-placeholder')).toHaveTextContent('森')
+    await expect(canvas.getByRole('img', { name: 'アバターのプレースホルダー' })).toHaveTextContent('森')
     // And: 実際の画像は表示されない
     await expect(canvas.queryByAltText('森田太郎のアバター')).not.toBeInTheDocument()
   },
@@ -170,7 +171,7 @@ export const DisplayCustomAvatar: Story = {
     // Then: カスタムアバター画像が表示される
     await expect(canvas.getByAltText('清水花子のアバター')).toBeInTheDocument()
     // And: プレースホルダーは表示されない
-    await expect(canvas.queryByTestId('avatar-placeholder')).not.toBeInTheDocument()
+    await expect(canvas.queryByRole('img', { name: 'アバターのプレースホルダー' })).not.toBeInTheDocument()
   },
 }
 
@@ -186,12 +187,12 @@ export const ConditionalRendering: Story = {
     const canvas = within(canvasElement)
     
     // 必須項目は表示される
-    await expect(canvas.getByTestId('user-name')).toBeInTheDocument()
-    await expect(canvas.getByTestId('user-email')).toBeInTheDocument()
+    await expect(canvas.getByRole('heading')).toBeInTheDocument()
+    await expect(canvas.getByText('test@example.com')).toBeInTheDocument()
     
     // オプション項目は表示されない
-    await expect(canvas.queryByTestId('user-age')).not.toBeInTheDocument()
-    await expect(canvas.queryByTestId('user-role')).not.toBeInTheDocument()
-    await expect(canvas.queryByTestId('online-indicator')).not.toBeInTheDocument()
+    await expect(canvas.queryByText(/歳$/)).not.toBeInTheDocument()
+    await expect(canvas.queryByText('ユーザーの役割')).not.toBeInTheDocument()
+    await expect(canvas.queryByRole('status', { name: 'オンライン' })).not.toBeInTheDocument()
   },
 }

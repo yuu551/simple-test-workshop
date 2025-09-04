@@ -28,7 +28,7 @@ export const UserCard = ({
               className="user-card__avatar-img"
             />
           ) : (
-            <div className="user-card__avatar-placeholder" data-testid="avatar-placeholder">
+            <div className="user-card__avatar-placeholder" data-testid="avatar-placeholder" role="img" aria-label="アバターのプレースホルダー">
               {name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -36,6 +36,7 @@ export const UserCard = ({
             <div 
               className="user-card__status user-card__status--online"
               data-testid="online-indicator"
+              role="status"
               aria-label="オンライン"
             />
           )}

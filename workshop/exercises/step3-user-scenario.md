@@ -180,7 +180,7 @@ export const UserIncrementsAndResets: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
-    const counterValue = canvas.getByTestId('counter-value')
+    const counterValue = canvas.getByRole('status', { name: '現在のカウント' })
     const incrementButton = canvas.getByLabelText('カウントを1増やす')
     const resetButton = canvas.getByLabelText('カウントをリセット')
     
@@ -229,12 +229,13 @@ export const DisplayCompleteProfile: Story = {
     const canvas = within(canvasElement)
     
     // Given & Then: すべての情報が正しく表示されている
-    await expect(canvas.getByTestId('user-name')).toHaveTextContent('テスト太郎')
-    await expect(canvas.getByTestId('user-email')).toHaveTextContent('test.taro@company.com')
-    await expect(canvas.getByTestId('user-age')).toHaveTextContent('32歳')
-    await expect(canvas.getByTestId('user-role')).toHaveTextContent('シニアエンジニア')
+    await expect(canvas.getByRole('heading', { name: 'テスト太郎' })).toBeInTheDocument()
+    await expect(canvas.getByText('test.taro@company.com')).toBeInTheDocument()
+    await expect(canvas.getByText('年齢:')).toBeInTheDocument()
+    await expect(canvas.getByText('32歳')).toBeInTheDocument()
+    await expect(canvas.getByText('シニアエンジニア')).toBeInTheDocument()
     await expect(canvas.getByAltText('テスト太郎のアバター')).toBeInTheDocument()
-    await expect(canvas.getByTestId('online-indicator')).toBeInTheDocument()
+    await expect(canvas.getByRole('status', { name: 'オンライン' })).toBeInTheDocument()
   },
 }
 ```

@@ -107,7 +107,7 @@ export const AlreadyAtMaximum: Story = {
 ### Storybookでの確認ポイント
 1. ボタンの無効化が正しく機能するか
 2. 範囲表示が正しいか
-3. カウンター値が見やすく表示されるか
+3. カウンター値が見やすく表示されるか（`getByRole('status', { name: '現在のカウント' })` で確認できる）
 
 ---
 

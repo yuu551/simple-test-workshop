@@ -59,7 +59,7 @@ export const UserIncrementsCounter: Story = {
     const canvas = within(canvasElement)
     
     // Given: カウンターが0の状態
-    const counterValue = canvas.getByTestId('counter-value')
+    const counterValue = canvas.getByRole('status', { name: '現在のカウント' })
     await expect(counterValue).toHaveTextContent('0')
     
     // When: プラスボタンをクリックする
@@ -80,7 +80,7 @@ export const UserDecrementsCounter: Story = {
     const canvas = within(canvasElement)
     
     // Given: カウンターが5の状態
-    const counterValue = canvas.getByTestId('counter-value')
+    const counterValue = canvas.getByRole('status', { name: '現在のカウント' })
     await expect(counterValue).toHaveTextContent('5')
     
     // When: マイナスボタンをクリックする
@@ -100,7 +100,7 @@ export const UserResetsCounter: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
-    const counterValue = canvas.getByTestId('counter-value')
+    const counterValue = canvas.getByRole('status', { name: '現在のカウント' })
     const incrementButton = canvas.getByLabelText('カウントを1増やす')
     const resetButton = canvas.getByLabelText('カウントをリセット')
     
@@ -126,7 +126,7 @@ export const UserHitsMaximumLimit: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
-    const counterValue = canvas.getByTestId('counter-value')
+    const counterValue = canvas.getByRole('status', { name: '現在のカウント' })
     const incrementButton = canvas.getByLabelText('カウントを1増やす')
     
     // Given: カウンターが最大値の1つ前
@@ -151,7 +151,7 @@ export const UserHitsMinimumLimit: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
-    const counterValue = canvas.getByTestId('counter-value')
+    const counterValue = canvas.getByRole('status', { name: '現在のカウント' })
     const decrementButton = canvas.getByLabelText('カウントを1減らす')
     
     // Given: カウンターが最小値の1つ上
@@ -178,7 +178,7 @@ export const RapidClicking: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
-    const counterValue = canvas.getByTestId('counter-value')
+    const counterValue = canvas.getByRole('status', { name: '現在のカウント' })
     const incrementButton = canvas.getByLabelText('カウントを1増やす')
     const decrementButton = canvas.getByLabelText('カウントを1減らす')
     
