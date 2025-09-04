@@ -388,7 +388,7 @@ export const UserUsesKeyboardShortcuts: Story = {
 3. 🔵 コードを改善
 
 ### 課題2: 追加シナリオのTDD
-以下のシナリオもPlay Function TDDで実装してみましょう：
+以下のシナリオもPlay Function TDDで実装してみましょう。
 
 ```gherkin
 Scenario: 空文字での保存を防ぐ
@@ -405,7 +405,7 @@ Scenario: 編集中は他の操作を無効化
 ```
 
 ### 課題3: 新機能のTDD（上級者向け）
-新しいユーザーストーリーから始めてみましょう：
+新しいユーザーストーリーから始めてみましょう。
 
 ```gherkin
 Feature: タスクの優先度設定
@@ -444,7 +444,7 @@ Scenario: 優先度を設定する
 
 ## まとめ
 
-Play Function TDDで学んだこと：
+Play Function TDDで学んだこと
 - ユーザーシナリオから始める開発手法
 - Given-When-Thenでの要求整理
 - 視覚的フィードバックを活用した開発
@@ -458,9 +458,3 @@ Play Function TDDで学んだこと：
 3. Play Functionでの失敗テスト作成
 4. 最小実装
 5. リファクタリング
-
-### 確認事項
-- [ ] 編集機能のPlay Functionが全て通る
-- [ ] キーボードショートカットが動作する
-- [ ] エラーケースも適切にハンドリングされる
-- [ ] 追加シナリオも実装できた

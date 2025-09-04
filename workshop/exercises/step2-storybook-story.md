@@ -279,7 +279,7 @@ export const SpecialCharacters: Story = { args: { task: '特殊文字を含む�
 
 ## まとめ
 
-このステップで学んだこと：
+このステップで学んだこと
 - Storybookストーリーの基本的な作成方法
 - 様々な props の組み合わせでの表示確認
 - エッジケースの可視化
@@ -288,10 +288,3 @@ export const SpecialCharacters: Story = { args: { task: '特殊文字を含む�
 
 ### 次のステップ
 Step 3では、Play Functionを使った自動化されたユーザーシナリオテストについて学びます。
-
-### 確認事項
-- [ ] TodoItemの新しいストーリーが表示される
-- [ ] Counterの制限付きストーリーが正しく動作する
-- [ ] UserCardの職業別ストーリーが表示される
-- [ ] モバイル表示での確認ができた
-- [ ] Controls タブでの動的変更を試せた

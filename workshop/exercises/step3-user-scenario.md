@@ -411,28 +411,9 @@ npm run test:storybook
 
 ## まとめ
 
-このステップで学んだこと：
+このステップで学んだこと
 - Play Functionの基本的な使い方
 - ユーザーシナリオの自動化方法
 - 複雑な操作フローのテスト
 - エラーケースやエッジケースの確認
 - デバッグとベストプラクティス
-
-### 全ステップを通じて学んだこと
-1. ユーザーストーリー → シナリオ → テストの流れ
-2. Vitestでの単体テスト
-3. Storybookでの視覚的確認
-4. Play Functionでのシナリオ自動化
-
-### 確認事項
-- [ ] TodoItemのPlay Functionが正常に動作する
-- [ ] Counterの連続操作シナリオが実行される
-- [ ] UserCardの情報確認シナリオが通る
-- [ ] エラーケースのシナリオも実装できた
-- [ ] Storybook上でPlay Functionが自動実行される
-
-### 次に学ぶとよいこと
-- Visual Testing（Chromatic）
-- E2Eテスト（Playwright、Cypress）
-- アクセシビリティテスト
-- パフォーマンステスト

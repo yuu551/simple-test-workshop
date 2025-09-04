@@ -15,13 +15,13 @@ function App() {
           <h2>TodoItem コンポーネント</h2>
           <TodoItem 
             task="買い物に行く"
-            completed={false}
+            initialCompleted={false}
             onToggle={(completed) => console.log('Todo toggled:', completed)}
             onDelete={() => console.log('Todo deleted')}
           />
           <TodoItem 
             task="宿題をする"
-            completed={true}
+            initialCompleted={true}
             onToggle={(completed) => console.log('Todo toggled:', completed)}
             onDelete={() => console.log('Todo deleted')}
           />
