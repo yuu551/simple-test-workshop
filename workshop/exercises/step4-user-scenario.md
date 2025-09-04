@@ -40,22 +40,43 @@ export const UserScenario: Story = {
 
 ## 課題 4-2: TodoItemのユーザーシナリオ
 
-`src/components/TodoItem/TodoItem.stories.tsx` に以下のPlay Functionを追加してみましょう：
+`src/components/TodoItem/TodoItem.stories.tsx` を確認すると、すでに動作するPlay Functionが実装されています！
 
-### 課題: タスクの完了→未完了の切り替えシナリオ
+### 実装されている動作するシナリオ
+
+#### 1. 状態を持つラッパーコンポーネント（重要！）
+
+TodoItemは制御されたコンポーネントなので、実際のアプリケーションのような動作をテストするため、**状態を持つラッパーコンポーネント**が実装されています：
+
 ```typescript
-export const UserTogglesTodoTwice: Story = {
-  name: 'US-1-SC-2: ユーザーがタスクを完了→未完了と切り替える',
-  args: {
-    task: '重要な会議の準備',
-    completed: false,
-    onToggle: (completed: boolean) => {
-      console.log('Task toggled to:', completed)
-    },
-    onDelete: () => {
-      console.log('Task deleted')
-    },
-  },
+// すでに実装されている
+const TodoItemWithState = ({ task, initialCompleted = false }: { 
+  task: string; 
+  initialCompleted?: boolean 
+}) => {
+  const [completed, setCompleted] = useState(initialCompleted)
+  
+  return (
+    <TodoItem
+      task={task}
+      completed={completed}
+      onToggle={(newCompleted) => {
+        console.log('onToggle:', newCompleted)
+        setCompleted(newCompleted) // 実際に状態を更新！
+      }}
+      onDelete={() => console.log('onDelete called')}
+    />
+  )
+}
+```
+
+#### 2. 動作するPlay Function例
+
+```typescript
+// すでに実装されている - 動作します！
+export const UserTogglesTodo: Story = {
+  name: 'US-1-SC-1: ユーザーがタスクの完了状態を切り替える',
+  render: () => <TodoItemWithState task="買い物に行く" initialCompleted={false} />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
@@ -63,13 +84,60 @@ export const UserTogglesTodoTwice: Story = {
     const checkbox = canvas.getByRole('checkbox')
     await expect(checkbox).not.toBeChecked()
     
-    // When: チェックボックスをクリック（完了にする）
+    // When: チェックボックスをクリックする
+    await userEvent.click(checkbox)
+    
+    // Then: チェックボックスがチェックされる（実際に動作する！）
+    await expect(checkbox).toBeChecked()
+  },
+}
+```
+
+#### 3. 逆方向のテスト
+
+```typescript
+// すでに実装されている - これも動作します！
+export const UserUnchecksCompletedTodo: Story = {
+  name: 'US-1-SC-2: ユーザーが完了したタスクを未完了に戻す',
+  render: () => <TodoItemWithState task="洗濯物を干す" initialCompleted={true} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    
+    // Given: 完了したタスクがある
+    const checkbox = canvas.getByRole('checkbox')
+    await expect(checkbox).toBeChecked()
+    
+    // When: チェックボックスをクリックする
+    await userEvent.click(checkbox)
+    
+    // Then: チェックボックスのチェックが外れる（実際に動作する！）
+    await expect(checkbox).not.toBeChecked()
+  },
+}
+```
+
+### 課題: 自分でも作ってみよう
+
+上記の動作パターンを参考に、以下のシナリオを追加してみましょう：
+
+```typescript
+export const UserTogglesTodoTwice: Story = {
+  name: 'ユーザーがタスクを2回切り替える',
+  render: () => <TodoItemWithState task="課題をやる" initialCompleted={false} />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    const checkbox = canvas.getByRole('checkbox')
+    
+    // Given: 未完了状態
+    await expect(checkbox).not.toBeChecked()
+    
+    // When: 1回目のクリック（完了にする）
     await userEvent.click(checkbox)
     
     // Then: 完了状態になる
     await expect(checkbox).toBeChecked()
     
-    // When: もう一度クリック（未完了に戻す）  
+    // When: 2回目のクリック（未完了に戻す）
     await userEvent.click(checkbox)
     
     // Then: 未完了状態に戻る
@@ -78,35 +146,68 @@ export const UserTogglesTodoTwice: Story = {
 }
 ```
 
-### 課題: 削除シナリオ
+### 削除ボタンのテスト
+
 ```typescript
-export const UserDeletesTask: Story = {
+// すでに実装されている
+export const UserDeletesTodo: Story = {
   name: 'US-2-SC-1: ユーザーがタスクを削除する',
   args: {
-    task: '不要になったタスク',
+    task: 'ゴミ出し',
     completed: false,
-    onToggle: (completed: boolean) => {
-      console.log('Task toggled to:', completed)
-    },
-    onDelete: () => {
-      alert('タスクが削除されました')
-    },
   },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement)
     
-    // Given: タスクが表示されている
-    await expect(canvas.getByText('不要になったタスク')).toBeInTheDocument()
+    // Given: タスクがある
+    await expect(canvas.getByText('ゴミ出し')).toBeInTheDocument()
     
-    // When: 削除ボタンをクリック
-    const deleteButton = canvas.getByLabelText('不要になったタスクを削除')
+    // When: 削除ボタンをクリックする
+    const deleteButton = canvas.getByRole('button', { name: 'ゴミ出しを削除' })
     await userEvent.click(deleteButton)
     
-    // Then: 削除処理が実行される（この例ではアラート表示）
-    // 実際のアプリケーションでは、タスクがDOMから削除される
+    // Then: 削除処理が実行される（コンソールログで確認）
+  },
+}
+
+### アクセシビリティテスト
+
+実装済みのアクセシビリティテストも参考になります：
+
+```typescript
+// すでに実装されている
+export const AccessibilityTest: Story = {
+  name: 'アクセシビリティ確認',
+  args: {
+    task: 'キーボードでアクセス可能',
+    completed: false,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    
+    // フォーカス移動のテスト
+    const checkbox = canvas.getByRole('checkbox')
+    const deleteButton = canvas.getByRole('button')
+    
+    // チェックボックスにフォーカス
+    checkbox.focus()
+    await expect(checkbox).toHaveFocus()
+    
+    // Tabで削除ボタンに移動
+    await userEvent.tab()
+    await expect(deleteButton).toHaveFocus()
+    
+    // 削除ボタンに適切なaria-labelがあることを確認
+    await expect(deleteButton).toHaveAttribute('aria-label', 'キーボードでアクセス可能を削除')
   },
 }
 ```
+
+### 重要なポイント
+
+1. **render propを使用**: `render: () => <TodoItemWithState ... />` でラッパーコンポーネントを使用
+2. **実際の状態変更**: ラッパーコンポーネント内でuseStateを使用して実際にstateが変更される
+3. **現実的なテスト**: 実際のアプリケーションと同じ動作をテストできる
 
 ---
 

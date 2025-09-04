@@ -269,4 +269,38 @@ describe('formatRelativeTime', () => {
       expect(result).toBe(expected)
     })
   })
+
+  test('時刻なしのlongフォーマットで正しく表示される', () => {
+    const date = new Date('2024-12-25T15:30:00')
+    const result = formatDate(date, { format: 'long' })
+    
+    expect(result).toBe('2024年12月25日')
+  })
+
+  test('空文字列を渡すとInvalid Dateが返される', () => {
+    const result = formatDate('')
+    
+    expect(result).toBe('Invalid Date')
+  })
+
+  describe('さまざまな年の12月31日', () => {
+    test.each([
+      [2023, '2023年12月31日'],
+      [2024, '2024年12月31日'], 
+      [2025, '2025年12月31日'],
+    ])('%d年の12月31日が正しく表示される', (year, expected) => {
+      const date = new Date(`${year}-12-31T00:00:00`)
+      const result = formatDate(date, { format: 'long' })
+      
+      expect(result).toBe(expected)
+    })
+  })
+
+  test('30分前が正しく表示される', () => {
+    const baseDate = new Date('2024-03-15T12:00:00')
+    const date = new Date('2024-03-15T11:30:00')
+    const result = formatRelativeTime(date, baseDate)
+    
+    expect(result).toBe('30分前')
+  })
 })

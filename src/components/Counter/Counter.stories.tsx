@@ -197,3 +197,19 @@ export const RapidClicking: Story = {
     await expect(counterValue).toHaveTextContent('-3')
   },
 }
+
+export const StrictLimits: Story = {
+  args: {
+    initialValue: 0,
+    min: -2,
+    max: 2,
+  },
+}
+
+export const AlreadyAtMaximum: Story = {
+  args: {
+    initialValue: 10,
+    min: -10,
+    max: 10,
+  },
+}

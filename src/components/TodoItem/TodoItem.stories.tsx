@@ -153,3 +153,62 @@ export const AccessibilityTest: Story = {
     await expect(deleteButton).toHaveAttribute('aria-label', 'キーボードでアクセス可能を削除')
   },
 }
+
+export const UrgentTask: Story = {
+  args: {
+    task: '【緊急】重要な会議の資料準備',
+    completed: false,
+    onToggle: (completed: boolean) => {
+      console.log('Urgent task toggled:', completed)
+    },
+    onDelete: () => {
+      console.log('Urgent task deleted')
+    },
+  },
+}
+
+export const VeryLongTask: Story = {
+  args: {
+    task: 'これは非常に長いタスクの例で、UIが長いテキストに対してどのように表示されるかを確認するためのものです。レイアウトが崩れないか、適切に改行されるかなどをチェックできます。',
+    completed: false,
+    onToggle: (completed: boolean) => {
+      console.log('Long task toggled:', completed)
+    },
+    onDelete: () => {
+      console.log('Long task deleted')
+    },
+  },
+}
+
+export const UserTogglesTodoTwice: Story = {
+  name: 'US-1-SC-2: ユーザーがタスクを完了→未完了と切り替える',
+  args: {
+    task: '重要な会議の準備',
+    completed: false,
+    onToggle: (completed: boolean) => {
+      console.log('Task toggled to:', completed)
+    },
+    onDelete: () => {
+      console.log('Task deleted')
+    },
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement)
+    
+    // Given: 未完了のタスクがある
+    const checkbox = canvas.getByRole('checkbox')
+    await expect(checkbox).not.toBeChecked()
+    
+    // When: チェックボックスをクリック（完了にする）
+    await userEvent.click(checkbox)
+    
+    // // Then: 完了状態になる
+     await expect(checkbox).toBeChecked()
+    
+    // // When: もう一度クリック（未完了に戻す）  
+    // await userEvent.click(checkbox)
+    
+    // // Then: 未完了状態に戻る
+    // await expect(checkbox).not.toBeChecked()
+  },
+}

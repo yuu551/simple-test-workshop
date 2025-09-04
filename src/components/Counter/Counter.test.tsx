@@ -105,4 +105,23 @@ describe('Counter', () => {
     
     expect(screen.getByTestId('counter-value')).toHaveTextContent('3')
   })
+
+  test('最大値に達するとインクリメントボタンが無効化される', () => {
+    render(<Counter initialValue={2} max={3} />)
+    
+    const incrementButton = screen.getByLabelText('カウントを1増やす')
+    const counterValue = screen.getByTestId('counter-value')
+    
+    // 最初は有効
+    expect(incrementButton).not.toBeDisabled()
+    
+    // 1回クリック → 最大値に到達
+    fireEvent.click(incrementButton)
+    
+    // 値が最大値になることを確認
+    expect(counterValue).toHaveTextContent('3')
+    
+    // ボタンが無効化されることを確認
+    expect(incrementButton).toBeDisabled()
+  })
 })

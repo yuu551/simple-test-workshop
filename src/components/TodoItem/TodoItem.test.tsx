@@ -126,4 +126,25 @@ describe('TodoItem', () => {
     const deleteButton = screen.getByRole('button', { name: '料理を作るを削除' })
     expect(deleteButton).toBeInTheDocument()
   })
+
+  test('完了したタスクにはcompletedクラスが適用される', () => {
+    const mockOnToggle = vi.fn()
+    const mockOnDelete = vi.fn()
+  
+    render(
+      <TodoItem
+        task="完了したタスク"
+        completed={true}
+        onToggle={mockOnToggle}
+        onDelete={mockOnDelete}
+      />
+    )
+  
+    // todo-itemクラスを持つ要素を取得
+    const todoItem = document.querySelector('.todo-item')
+    
+    // todo-item--completedクラスが適用されていることを確認
+    expect(todoItem).toHaveClass('todo-item--completed')
+  })
+
 })
