@@ -153,7 +153,7 @@ export const Manager: Story = {
 
 ---
 
-## 課題 3-5: ストーリーのグループ化とドキュメント
+## ストーリーのグループ化
 
 ### サブグループでの整理
 ```typescript
@@ -168,22 +168,6 @@ const meta: Meta<typeof UserCard> = {
       }
     }
   },
-}
-```
-
-### ストーリーにドキュメントを追加
-```typescript
-export const Developer: Story = {
-  args: {
-    // ... args
-  },
-  parameters: {
-    docs: {
-      description: {
-        story: '開発チームのメンバー表示例。オンライン状態と役職情報を含みます。'
-      }
-    }
-  }
 }
 ```
 
